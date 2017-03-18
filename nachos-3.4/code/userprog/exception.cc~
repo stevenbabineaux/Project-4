@@ -315,16 +315,6 @@ ExceptionHandler(ExceptionType which)
 			delete currentThread->space;
 		currentThread->Finish();	// Delete the thread.
 		break;
-		
-	case PageFaultException:
-		printf("ERROR: Page Fault Exception, called by thread %i.\n",currentThread->getID());
-			if (currentThread->getName() == "main")
-				ASSERT(FALSE);  //Not the way of handling an exception.
-			if(currentThread->space)	// Delete the used memory from the process.
-				delete currentThread->space;
-			currentThread->Finish();	// Delete the thread.
-			break;
-	
 	case NumExceptionTypes :
 		printf("ERROR: NumExceptionTypes, called by thread %i.\n",currentThread->getID());
 		if (currentThread->getName() == "main")
