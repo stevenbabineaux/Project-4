@@ -35,6 +35,7 @@ static int SRead(int addr, int size, int id);
 static void SWrite(char *buffer, int size, int id);
 Thread * getID(int toGet);
 
+
 // end FA98
 
 //----------------------------------------------------------------------
@@ -315,16 +316,42 @@ ExceptionHandler(ExceptionType which)
 			delete currentThread->space;
 		currentThread->Finish();	// Delete the thread.
 		break;
-		
+	
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+///////////////////////////START: PROJECT 4///////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+
 	case PageFaultException:
-		printf("ERROR: Page Fault Exception, called by thread %i.\n",currentThread->getID());
-			if (currentThread->getName() == "main")
+	{
+		unsigned int vpn;
+		int virtAddr;
+		virtAddr = (int)machine->ReadRegister(39);
+		vpn = (unsigned) virtAddr / PageSize;
+		
+		printf("VPN: %d\nThe bad register was %d\n",vpn, machine->ReadRegister(39));
+		machine->pageTable[vpn].valid = TRUE;
+		//for(int f = 0; i < machine->NumPhysPages; i++){
+			
+		//}
+		//printf("ERROR: Page Fault Exception, called by thread %i.\n",currentThread->getID());
+		
+			/*if (currentThread->getName() == "main")
 				ASSERT(FALSE);  //Not the way of handling an exception.
 			if(currentThread->space)	// Delete the used memory from the process.
 				delete currentThread->space;
 			currentThread->Finish();	// Delete the thread.
 			break;
-	
+		*/
+		break;
+	}
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+/////////////////////////////END: PROJECT 4///////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+
 	case NumExceptionTypes :
 		printf("ERROR: NumExceptionTypes, called by thread %i.\n",currentThread->getID());
 		if (currentThread->getName() == "main")
