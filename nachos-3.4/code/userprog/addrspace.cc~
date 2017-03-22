@@ -208,6 +208,14 @@ AddrSpace::AssignPage( int vpn)
 			PageSize, myNoff.initData.inFileAddr + (PageSize * vpn));
 	}
 	
+	if (myNoff.uninitData.size > 0) {
+        DEBUG('a', "Initializing data segment, at 0x%x, size %d\n", 
+			myNoff.uninitData.virtualAddr + (startPage * PageSize), myNoff.initData.size);
+			
+			
+        myFile->ReadAt(&(machine->mainMemory[myNoff.uninitData.virtualAddr + pAddr]),
+			PageSize, myNoff.uninitData.inFileAddr + (PageSize * vpn));
+	}
 	
 	
     //memset(machine->mainMemory + pAddr, 0, size);

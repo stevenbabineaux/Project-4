@@ -208,7 +208,7 @@ AddrSpace::AssignPage( int vpn)
 			PageSize, myNoff.initData.inFileAddr + (PageSize * vpn));
 	}
 	
-	
+
 	
     //memset(machine->mainMemory + pAddr, 0, size);
 
