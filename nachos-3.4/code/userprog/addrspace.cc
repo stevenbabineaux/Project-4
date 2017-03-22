@@ -18,7 +18,6 @@
 #include "copyright.h"
 #include "system.h"
 #include "addrspace.h"
-#include "noff.h"
 
 //----------------------------------------------------------------------
 // SwapHeader
@@ -59,18 +58,19 @@ SwapHeader (NoffHeader *noffH)
 
 AddrSpace::AddrSpace(OpenFile *executable)
 {
-    NoffHeader noffH;
-    unsigned int i, size, pAddr, counter;
+	myFile = executable;
+    
+    unsigned int i, counter;
 	space = false;
 
-    executable->ReadAt((char *)&noffH, sizeof(noffH), 0);
-    if ((noffH.noffMagic != NOFFMAGIC) && 
-		(WordToHost(noffH.noffMagic) == NOFFMAGIC))
-    	SwapHeader(&noffH);
-    ASSERT(noffH.noffMagic == NOFFMAGIC);
+    myFile->ReadAt((char *)&myNoff, sizeof(myNoff), 0);
+    if ((myNoff.noffMagic != NOFFMAGIC) && 
+		(WordToHost(myNoff.noffMagic) == NOFFMAGIC))
+    	SwapHeader(&myNoff);
+    ASSERT(myNoff.noffMagic == NOFFMAGIC);
 
 // how big is address space?
-    size = noffH.code.size + noffH.initData.size + noffH.uninitData.size 
+    size = myNoff.code.size + myNoff.initData.size + myNoff.uninitData.size 
 			+ UserStackSize;	// we need to increase the size
 						// to leave room for the stack
     numPages = divRoundUp(size, PageSize);
@@ -81,6 +81,7 @@ AddrSpace::AddrSpace(OpenFile *executable)
 	//This requires a global bitmap instance
 	
 	counter = 0;
+	/*
 	for(i = 0; i < NumPhysPages && counter < numPages; i++)
 	{
 		if(!memMap->Test(i))
@@ -93,14 +94,15 @@ AddrSpace::AddrSpace(OpenFile *executable)
 		else
 			counter = 0;
 	}
-	
+	*/
 	DEBUG('a', "%i contiguous blocks found for %i pages\n", counter, numPages);
 
 	//If no memory available, terminate
-	if(counter < numPages)
+	if(numPages > memMap->NumClear())
 	{
-		printf("Not enough contiguous memory for new process; terminating!.\n");
+		printf("Not enough memory for new process; terminating!.\n");
 		currentThread->killNewChild = true;
+
 		return;
 	}
 
@@ -117,7 +119,7 @@ AddrSpace::AddrSpace(OpenFile *executable)
     for (i = 0; i < numPages; i++) {
 		pageTable[i].virtualPage = i;	// for now, virtual page # = phys page #
 		//pageTable[i].physicalPage = i;	//Replace with pageTable[i].physicalPage = i + startPage;
-		pageTable[i].physicalPage = i + startPage;
+		//pageTable[i].physicalPage = i + startPage;
 		pageTable[i].valid = FALSE;
 		pageTable[i].use = FALSE;
 		pageTable[i].dirty = FALSE;
@@ -127,10 +129,12 @@ AddrSpace::AddrSpace(OpenFile *executable)
 
 		//Take the global bitmap and set the relevant chunks
 		//to indicate that the memory is in use
-		memMap->Mark(i + startPage);
+		//memMap->Mark(i + startPage);
     }
 	
 	memMap->Print();	// Useful!
+	
+	memset(machine->mainMemory + pAddr, 0, size);
     
 // zero out the entire address space, to zero the unitialized data segment 
 // and the stack segment
@@ -139,27 +143,63 @@ AddrSpace::AddrSpace(OpenFile *executable)
 	//Either way, it appears to zero out only however much memory is needed,
 	//so zeroing out all memory doesn't seem to be an issue. - Devin
 	
-	pAddr = startPage * PageSize;
 	
-    memset(machine->mainMemory + pAddr, 0, size);
 
 // then, copy in the code and data segments into memory
 //Change these too since they assume virtual page = physical page
 	  //Fix this by adding startPage times page size as an offset
-    if (noffH.code.size > 0) {
+	  
+	
+	
+}
+
+
+
+void
+AddrSpace::AssignPage( int vpn)
+{
+
+	startPage = memMap->Find();
+	machine->pageTable[vpn].physicalPage = startPage;
+	pAddr = startPage * PageSize;
+	
+	
+	if (myNoff.code.size > 0) {
         DEBUG('a', "Initializing code segment, at 0x%x, size %d\n", 
-			noffH.code.virtualAddr + (startPage * PageSize), noffH.code.size);
-        executable->ReadAt(&(machine->mainMemory[noffH.code.virtualAddr + pAddr]),
-			noffH.code.size, noffH.code.inFileAddr);
+			myNoff.code.virtualAddr + (startPage * PageSize), myNoff.code.size/ numPages);
+			
+		//printf("Start Point: %d",myNoff.code.inFileAddr +  PageSize* vpn);
+			
+			
+        myFile->ReadAt(&(machine->mainMemory[myNoff.code.virtualAddr  + pAddr]),
+			PageSize, myNoff.code.inFileAddr + ( PageSize * vpn)) ;
+    
     }
-    if (noffH.initData.size > 0) {
+    
+    
+    if (myNoff.initData.size > 0) {
         DEBUG('a', "Initializing data segment, at 0x%x, size %d\n", 
-			noffH.initData.virtualAddr + (startPage * PageSize), noffH.initData.size);
-        executable->ReadAt(&(machine->mainMemory[noffH.initData.virtualAddr + pAddr]),
-			noffH.initData.size, noffH.initData.inFileAddr);
-    }
+			myNoff.initData.virtualAddr + (startPage * PageSize), myNoff.initData.size);
+			
+			
+        myFile->ReadAt(&(machine->mainMemory[myNoff.initData.virtualAddr + pAddr]),
+			PageSize, myNoff.initData.inFileAddr + (PageSize * vpn));
+	}
+	
+	
+	
+    //memset(machine->mainMemory + pAddr, 0, size);
+
+
+
+	
+	
 
 }
+
+
+
+
 
 //----------------------------------------------------------------------
 // AddrSpace::~AddrSpace
@@ -173,15 +213,17 @@ AddrSpace::~AddrSpace()
 {
 	// Only clear the memory if it was set to begin with
 	// which in turn only happens after space is set to true
+	int pagebegin = machine->pageTable[0].virtualPage;
 	if(space)
 	{
-		for(int i = startPage; i < numPages + startPage; i++)	// We need an offset of startPage + numPages for clearing.
+		for(int i = pagebegin; i < numPages + pagebegin; i++)	// We need an offset of startPage + numPages for clearing.
 			memMap->Clear(i);
 
 		delete pageTable;
 
 		memMap->Print();
 	}
+	delete myFile;
 }
 
 //----------------------------------------------------------------------

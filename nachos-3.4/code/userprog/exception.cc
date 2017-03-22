@@ -332,6 +332,16 @@ ExceptionHandler(ExceptionType which)
 		
 		printf("VPN: %d\nThe bad register was %d\n",vpn, machine->ReadRegister(39));
 		machine->pageTable[vpn].valid = TRUE;
+		currentThread->space->AssignPage(vpn);
+		for(int i=0; i < NumPhysPages; i++){
+			if(machine->pageTable[i].valid)
+				printf("1");
+			else
+				printf("0");
+		
+		}
+		printf("\n");
+		//interrupt->Halt();
 		//for(int f = 0; i < machine->NumPhysPages; i++){
 			
 		//}

@@ -223,7 +223,6 @@ void
 Lseek(int fd, int offset, int whence)
 {
     int retVal = lseek(fd, offset, whence);
-    printf("Retval : %d\n", retVal);
     ASSERT(retVal >= 0);
 }
 

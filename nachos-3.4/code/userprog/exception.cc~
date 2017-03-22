@@ -328,10 +328,20 @@ ExceptionHandler(ExceptionType which)
 		unsigned int vpn;
 		int virtAddr;
 		virtAddr = (int)machine->ReadRegister(39);
-		vpn = (unsigned) ((int)machine->ReadRegister(39)) / PageSize;
+		vpn = (unsigned) virtAddr / PageSize;
 		
 		printf("VPN: %d\nThe bad register was %d\n",vpn, machine->ReadRegister(39));
 		machine->pageTable[vpn].valid = TRUE;
+		currentThread->space->AssignPage(vpn);
+		for(int i=0; i < NumPhysPages; i++){
+			if(machine->pageTable[i].valid)
+				printf("0");
+			else
+				printf("1");
+		
+		}
+		printf("\n");
+		//interrupt->Halt();
 		//for(int f = 0; i < machine->NumPhysPages; i++){
 			
 		//}

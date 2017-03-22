@@ -47,14 +47,6 @@ halt.o: halt.c
 halt: halt.o start.o
 	$(LD) $(LDFLAGS) start.o halt.o -o halt.coff
 	../bin/coff2noff halt.coff halt
-	
-	
-	
-tester.o: tester.c
-	$(CC) $(CFLAGS) -c tester.c
-tester: tester.o start.o
-	$(LD) $(LDFLAGS) start.o tester.o -o tester.coff
-	../bin/coff2noff tester.coff tester
 
 shell.o: shell.c
 	$(CC) $(CFLAGS) -c shell.c
