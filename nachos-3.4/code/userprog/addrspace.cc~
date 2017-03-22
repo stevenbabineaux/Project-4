@@ -59,6 +59,7 @@ SwapHeader (NoffHeader *noffH)
 AddrSpace::AddrSpace(OpenFile *executable)
 {
 	myFile = executable;
+		
     
     unsigned int i, counter;
 	space = false;
@@ -75,6 +76,27 @@ AddrSpace::AddrSpace(OpenFile *executable)
 						// to leave room for the stack
     numPages = divRoundUp(size, PageSize);
     size = numPages * PageSize;
+    
+    
+    char* filename = new char[64];
+    sprintf(filename, "%d.o", currentThread->getID());
+    
+    fileSystem->Create(filename, size);
+    OpenFile * copyto = fileSystem->Open(filename);
+    
+    char* Ecode = new char[myNoff.code.size];
+    char* EinitData = new char[myNoff.initData.size];
+    char* EuninitData = new char[myNoff.uninitData.size];
+    
+ 	myFile->ReadAt(Ecode, myNoff.code.size, myNoff.code.inFileAddr);
+ 	myFile->ReadAt(EinitData, myNoff.initData.size, myNoff.initData.inFileAddr);
+ 	myFile->ReadAt(EuninitData, myNoff.uninitData.size, myNoff.uninitData.inFileAddr);
+ 	
+ 	copyto->WriteAt(Ecode,myNoff.code.size, myNoff.code.inFileAddr);
+ 	copyto->WriteAt(EinitData, myNoff.initData.size, myNoff.initData.inFileAddr);
+ 	copyto->WriteAt(EuninitData, myNoff.uninitData.size, myNoff.uninitData.inFileAddr);
+    
+    
 
 	//Change this to reference the bitmap for free pages
 	//instead of total amount of pages
@@ -168,7 +190,7 @@ AddrSpace::AssignPage( int vpn)
         DEBUG('a', "Initializing code segment, at 0x%x, size %d\n", 
 			myNoff.code.virtualAddr + (startPage * PageSize), myNoff.code.size/ numPages);
 			
-		printf("Start Point: %d",myNoff.code.inFileAddr +  PageSize* vpn);
+		//printf("Start Point: %d",myNoff.code.inFileAddr +  PageSize* vpn);
 			
 			
         myFile->ReadAt(&(machine->mainMemory[myNoff.code.virtualAddr  + pAddr]),
@@ -223,7 +245,11 @@ AddrSpace::~AddrSpace()
 
 		memMap->Print();
 	}
+	char* filename = new char[64];
+	sprintf(filename, "%d.o", currentThread->getID());
+	fileSystem->Remove(filename);
 	delete myFile;
+	
 }
 
 //----------------------------------------------------------------------

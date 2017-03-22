@@ -4,7 +4,7 @@ int
 main()
 {
 
-	Write("Hey This Works duude", 0, 1);
+	Write("Hey This Works duude\n", 0, 1);
 	Exit(0);
 
 }
