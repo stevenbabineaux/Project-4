@@ -31,9 +31,12 @@ class AddrSpace {
 	noffHeader myNoff;
 	int size;
 	bool space;
+	char * fileN;
 	int pAddr;
     void InitRegisters();		// Initialize user-level CPU registers,
 					// before jumping to user code
+
+
 
     void SaveState();			// Save/restore address space-specific
     void RestoreState();		// info on a context switch 

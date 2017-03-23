@@ -191,8 +191,7 @@ ExceptionHandler(ExceptionType which)
 					delete filename;
 					break;
 				}
-				delete filename;
-
+				
 				// Calculate needed memory space
 				AddrSpace *space;
 				space = new AddrSpace(executable);
@@ -201,6 +200,7 @@ ExceptionHandler(ExceptionType which)
 				if(!currentThread->killNewChild)	// If so...
 				{
 					Thread* execThread = new Thread("thrad!");	// Make a new thread for the process.
+					
 					execThread->space = space;	// Set the address space to the new space.
 					execThread->setID(threadID);	// Set the unique thread ID
 					activeThreads->Append(execThread);	// Put it on the active list.
@@ -213,6 +213,7 @@ ExceptionHandler(ExceptionType which)
 					machine->WriteRegister(2, -1 * (threadID + 1));	// Return an error code
 					currentThread->killNewChild = false;	// Reset our variable
 				}
+				delete executable;
 				break;	// Get out.
 			}
 			case SC_Join :	// Join one process to another.
@@ -330,9 +331,11 @@ ExceptionHandler(ExceptionType which)
 		virtAddr = (int)machine->ReadRegister(39);
 		vpn = (unsigned) virtAddr / PageSize;
 		
+		
 		printf("VPN: %d\nThe bad register was %d\n",vpn, machine->ReadRegister(39));
-		machine->pageTable[vpn].valid = TRUE;
+		
 		currentThread->space->AssignPage(vpn);
+		/*
 		for(int i=0; i < NumPhysPages; i++){
 			if(machine->pageTable[i].valid)
 				printf("1");
@@ -340,6 +343,7 @@ ExceptionHandler(ExceptionType which)
 				printf("0");
 		
 		}
+		*/
 		printf("\n");
 		//interrupt->Halt();
 		//for(int f = 0; i < machine->NumPhysPages; i++){

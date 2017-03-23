@@ -64,13 +64,16 @@ AddrSpace::AddrSpace(OpenFile *executable)
 		currentThread->Finish();
 		
 	}
-	myFile = executable;
+	
+	
+	
+	
 		
     
     unsigned int i, counter;
 	space = false;
 
-    myFile->ReadAt((char *)&myNoff, sizeof(myNoff), 0);
+    executable->ReadAt((char *)&myNoff, sizeof(myNoff), 0);
     if ((myNoff.noffMagic != NOFFMAGIC) && 
 		(WordToHost(myNoff.noffMagic) == NOFFMAGIC))
     	SwapHeader(&myNoff);
@@ -84,24 +87,35 @@ AddrSpace::AddrSpace(OpenFile *executable)
     size = numPages * PageSize;
     
     
-    char* filename = new char[64];
-    sprintf(filename, "%d.o", currentThread->getID());
+    
+    char* fileX = new char[64];
+    fileN = new char[64];
+    
+    sprintf(fileX, "%d.swap", currentThread->getID());
+    strcpy(fileN, fileX);
     //printf("%s\n", filename);
     
-    fileSystem->Create(filename, size);	// ASSERTION FAILED
-    //OpenFile * copyto = fileSystem->Open(filename);
+    fileSystem->Create(fileX, size);	// ASSERTION FAILED
+    OpenFile * copyto = fileSystem->Open(fileX);
     
     char* Ecode = new char[myNoff.code.size];
     char* EinitData = new char[myNoff.initData.size];
     char* EuninitData = new char[myNoff.uninitData.size];
     
- 	myFile->ReadAt(Ecode, myNoff.code.size, myNoff.code.inFileAddr);
- 	myFile->ReadAt(EinitData, myNoff.initData.size, myNoff.initData.inFileAddr);
- 	myFile->ReadAt(EuninitData, myNoff.uninitData.size, myNoff.uninitData.inFileAddr);
+ 	executable->ReadAt(Ecode, myNoff.code.size, myNoff.code.inFileAddr);
+ 	executable->ReadAt(EinitData, myNoff.initData.size, myNoff.initData.inFileAddr);
+ 	executable->ReadAt(EuninitData, myNoff.uninitData.size, myNoff.uninitData.inFileAddr);
  	
- 	myFile->WriteAt(Ecode, myNoff.code.size, myNoff.code.inFileAddr);
- 	myFile->WriteAt(EinitData, myNoff.initData.size, myNoff.initData.inFileAddr);
- 	myFile->WriteAt(EuninitData, myNoff.uninitData.size, myNoff.uninitData.inFileAddr);
+ 	copyto->WriteAt(Ecode, myNoff.code.size, myNoff.code.inFileAddr);
+ 	copyto->WriteAt(EinitData, myNoff.initData.size, myNoff.initData.inFileAddr);
+ 	copyto->WriteAt(EuninitData, myNoff.uninitData.size, myNoff.uninitData.inFileAddr);
+ 
+ 	delete Ecode;
+ 	delete EinitData;
+ 	delete EuninitData;
+ 	delete fileX;
+ 	delete copyto;
+ 	
     
     //fileSystem->Close(filename);
 	
@@ -190,32 +204,55 @@ AddrSpace::AssignPage( int vpn)
 {
 
 	startPage = memMap->Find();
+	if(vpn < numPages)
+	pageTable[vpn].valid = TRUE;
+	memMap->Print();
+//	machine->pageTable[vpn].valid = TRUE;
 	machine->pageTable[vpn].physicalPage = startPage;
 	pAddr = startPage * PageSize;
+	printf("%s\n", fileN);
+	OpenFile * x = fileSystem->Open(fileN);
 	
 	
-	if (myNoff.code.size > 0) {
+	if (vpn * PageSize >= myNoff.code.virtualAddr && vpn * PageSize < myNoff.code.virtualAddr + myNoff.code.size) {
         DEBUG('a', "Initializing code segment, at 0x%x, size %d\n", 
-			myNoff.code.virtualAddr + (startPage * PageSize), myNoff.code.size/ numPages);
+			myNoff.code.virtualAddr + (startPage * PageSize), PageSize);
 			
-		//printf("Start Point: %d",myNoff.code.inFileAddr +  PageSize* vpn);
+		printf("Start Point: %d\n",myNoff.code.inFileAddr +vpn * PageSize);
 			
 			
-        myFile->ReadAt(&(machine->mainMemory[myNoff.code.virtualAddr  + pAddr]),
-			PageSize, myNoff.code.inFileAddr + ( PageSize * vpn)) ;
+        x->ReadAt(&(machine->mainMemory[myNoff.code.virtualAddr  + pAddr]),
+			PageSize, myNoff.code.inFileAddr +  vpn * PageSize);
     
+    
+    
+    
+    	
     }
+  
+  
+  
+  
+
     
-    
-    if (myNoff.initData.size > 0) {
+   
+    if (vpn *PageSize>= myNoff.initData.virtualAddr && vpn* PageSize < myNoff.initData.virtualAddr + myNoff.initData.size) {
         DEBUG('a', "Initializing data segment, at 0x%x, size %d\n", 
-			myNoff.initData.virtualAddr + (startPage * PageSize), myNoff.initData.size);
+			myNoff.initData.virtualAddr + (startPage * PageSize),PageSize);
 			
-			
-        myFile->ReadAt(&(machine->mainMemory[myNoff.initData.virtualAddr + pAddr]),
-			PageSize, myNoff.initData.inFileAddr + (PageSize * vpn));
+		printf("Start Point: %d\n",myNoff.initData.inFileAddr + vpn * PageSize);	
+				
+	
+        x->ReadAt(&(machine->mainMemory[myNoff.initData.virtualAddr + pAddr]),
+			PageSize, myNoff.initData.inFileAddr +  vpn* PageSize);
 	}
 	
+	
+	
+	
+	delete x;
+	
+	printf("Seg Here?\n");
 
 	
     //memset(machine->mainMemory + pAddr, 0, size);
@@ -253,10 +290,9 @@ AddrSpace::~AddrSpace()
 
 		memMap->Print();
 	}
-	char* filename = new char[64];
-	sprintf(filename, "%d.o", currentThread->getID());
-	fileSystem->Remove(filename);
-	delete myFile;
+	//char* filename = new char[64];
+	
+	//fileSystem->Remove(fileN);
 	
 }
 
