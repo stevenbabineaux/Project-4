@@ -109,6 +109,7 @@ AddrSpace::AddrSpace(OpenFile *executable)
  	executable->ReadAt(EinitData, myNoff.initData.size, myNoff.initData.inFileAddr);
  	executable->ReadAt(EuninitData, myNoff.uninitData.size, myNoff.uninitData.inFileAddr);
  	
+ 	
  	copyto->WriteAt(Ecode, myNoff.code.size, myNoff.code.inFileAddr);
  	copyto->WriteAt(EinitData, myNoff.initData.size, myNoff.initData.inFileAddr);
  	copyto->WriteAt(EuninitData, myNoff.uninitData.size, myNoff.uninitData.inFileAddr);
@@ -218,8 +219,11 @@ AddrSpace::AssignPage( int vpn)
 	
 	
 	if (vpn * PageSize >= myNoff.code.virtualAddr && vpn * PageSize < myNoff.code.virtualAddr + myNoff.code.size) {
+	
+	/*
         DEBUG('a', "Initializing code segment, at 0x%x, size %d\n", 
 			myNoff.code.virtualAddr + (startPage * PageSize), PageSize);
+			*/
 			
 		printf("Start Point: %d\n",myNoff.code.inFileAddr +vpn * PageSize);
 			
@@ -240,8 +244,11 @@ AddrSpace::AssignPage( int vpn)
     
    
     if (vpn *PageSize>= myNoff.initData.virtualAddr && vpn* PageSize < myNoff.initData.virtualAddr + myNoff.initData.size) {
+    
+    /*
         DEBUG('a', "Initializing data segment, at 0x%x, size %d\n", 
 			myNoff.initData.virtualAddr + (startPage * PageSize),PageSize);
+		*/
 			
 		printf("Start Point: %d\n",myNoff.initData.inFileAddr + vpn * PageSize);	
 				
@@ -295,7 +302,7 @@ AddrSpace::~AddrSpace()
 	}
 	//char* filename = new char[64];
 	
-	fileSystem->Remove(fileN);
+	//fileSystem->Remove(fileN);
 	
 }
 
