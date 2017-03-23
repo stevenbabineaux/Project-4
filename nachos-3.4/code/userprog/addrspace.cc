@@ -91,11 +91,14 @@ AddrSpace::AddrSpace(OpenFile *executable)
     char* fileX = new char[64];
     fileN = new char[64];
     
-    sprintf(fileX, "%d.swap", currentThread->getID());
+    
+    sprintf(fileX, "%d.swap", threadID);
     strcpy(fileN, fileX);
     //printf("%s\n", filename);
     
     fileSystem->Create(fileX, size);	// ASSERTION FAILED
+    
+    
     OpenFile * copyto = fileSystem->Open(fileX);
     
     char* Ecode = new char[myNoff.code.size];
@@ -252,7 +255,7 @@ AddrSpace::AssignPage( int vpn)
 	
 	delete x;
 	
-	printf("Seg Here?\n");
+	
 
 	
     //memset(machine->mainMemory + pAddr, 0, size);
@@ -292,7 +295,7 @@ AddrSpace::~AddrSpace()
 	}
 	//char* filename = new char[64];
 	
-	//fileSystem->Remove(fileN);
+	fileSystem->Remove(fileN);
 	
 }
 

@@ -194,18 +194,20 @@ ExceptionHandler(ExceptionType which)
 				
 				// Calculate needed memory space
 				AddrSpace *space;
-				space = new AddrSpace(executable);
+				
 				
 				// Do we have enough space?
 				if(!currentThread->killNewChild)	// If so...
 				{
 					Thread* execThread = new Thread("thrad!");	// Make a new thread for the process.
+					threadID++;	// Increment the total number of threads.
+					
+					space = new AddrSpace(executable);
 					
 					execThread->space = space;	// Set the address space to the new space.
 					execThread->setID(threadID);	// Set the unique thread ID
 					activeThreads->Append(execThread);	// Put it on the active list.
 					machine->WriteRegister(2, threadID);	// Return the thread ID as our Exec return variable.
-					threadID++;	// Increment the total number of threads.
 					execThread->Fork(processCreator, 0);	// Fork it.
 				}
 				else	// If not...

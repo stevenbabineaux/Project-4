@@ -196,13 +196,11 @@ ExceptionHandler(ExceptionType which)
 				AddrSpace *space;
 				space = new AddrSpace(executable);
 				
-				
 				// Do we have enough space?
 				if(!currentThread->killNewChild)	// If so...
 				{
-					
 					Thread* execThread = new Thread("thrad!");	// Make a new thread for the process.
-					printf("New Thread\n");
+					
 					execThread->space = space;	// Set the address space to the new space.
 					execThread->setID(threadID);	// Set the unique thread ID
 					activeThreads->Append(execThread);	// Put it on the active list.
