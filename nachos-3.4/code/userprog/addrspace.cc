@@ -58,6 +58,12 @@ SwapHeader (NoffHeader *noffH)
 
 AddrSpace::AddrSpace(OpenFile *executable)
 {
+	if(currentThread->getID() >= 512)
+	{
+		printf("haltingfjdskfjsfdsa;l\n");
+		currentThread->Finish();
+		
+	}
 	myFile = executable;
 		
     
@@ -80,9 +86,10 @@ AddrSpace::AddrSpace(OpenFile *executable)
     
     char* filename = new char[64];
     sprintf(filename, "%d.o", currentThread->getID());
+    //printf("%s\n", filename);
     
-    fileSystem->Create(filename, size);
-    OpenFile * copyto = fileSystem->Open(filename);
+    fileSystem->Create(filename, size);	// ASSERTION FAILED
+    //OpenFile * copyto = fileSystem->Open(filename);
     
     char* Ecode = new char[myNoff.code.size];
     char* EinitData = new char[myNoff.initData.size];
@@ -92,11 +99,12 @@ AddrSpace::AddrSpace(OpenFile *executable)
  	myFile->ReadAt(EinitData, myNoff.initData.size, myNoff.initData.inFileAddr);
  	myFile->ReadAt(EuninitData, myNoff.uninitData.size, myNoff.uninitData.inFileAddr);
  	
- 	copyto->WriteAt(Ecode,myNoff.code.size, myNoff.code.inFileAddr);
- 	copyto->WriteAt(EinitData, myNoff.initData.size, myNoff.initData.inFileAddr);
- 	copyto->WriteAt(EuninitData, myNoff.uninitData.size, myNoff.uninitData.inFileAddr);
+ 	myFile->WriteAt(Ecode, myNoff.code.size, myNoff.code.inFileAddr);
+ 	myFile->WriteAt(EinitData, myNoff.initData.size, myNoff.initData.inFileAddr);
+ 	myFile->WriteAt(EuninitData, myNoff.uninitData.size, myNoff.uninitData.inFileAddr);
     
-    
+    //fileSystem->Close(filename);
+	
 
 	//Change this to reference the bitmap for free pages
 	//instead of total amount of pages
