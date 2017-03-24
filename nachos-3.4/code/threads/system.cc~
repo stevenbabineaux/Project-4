@@ -22,7 +22,6 @@ int threadChoice;
 int memChoice;
 bool pageFlag;
 int * task4 = new int();
-int * task5 = new int();
 
 BitMap * memMap;
 

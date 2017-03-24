@@ -18,7 +18,8 @@
 #include "copyright.h"
 #include "system.h"
 #include "addrspace.h"
-
+extern int * task4;
+extern int * task5;
 //----------------------------------------------------------------------
 // SwapHeader
 // 	Do little endian to big endian conversion on the bytes in the 
@@ -58,15 +59,17 @@ SwapHeader (NoffHeader *noffH)
 
 AddrSpace::AddrSpace(OpenFile *executable)
 {
-	if(currentThread->getID() >= 512)
+	if(currentThread->getID() >= 1000)
 	{
-		printf("haltingfjdskfjsfdsa;l\n");
+		
 		currentThread->Finish();
+		return;
 		
 	}
 	
 	
-	
+	*task4 = 10;
+	printf("////////////////////////////////////////////////// %d\n", *task4);
 	
 		
     
@@ -208,41 +211,27 @@ AddrSpace::AssignPage( int vpn)
 {
 
 	startPage = memMap->Find();
-	if(vpn < numPages)
+	
 	pageTable[vpn].valid = TRUE;
 	memMap->Print();
 //	machine->pageTable[vpn].valid = TRUE;
 	machine->pageTable[vpn].physicalPage = startPage;
 	pAddr = startPage * PageSize;
-	printf("%s\n", fileN);
+	
 	OpenFile * x = fileSystem->Open(fileN);
 	
-	memset(machine->mainMemory + pAddr, 0, size);
+	memset(machine->mainMemory + pAddr, 0, PageSize);
 	
 	if (vpn * PageSize >= myNoff.code.virtualAddr && vpn * PageSize < myNoff.code.virtualAddr + myNoff.code.size) {
 	
 	/*
         DEBUG('a', "Initializing code segment, at 0x%x, size %d\n", 
 			myNoff.code.virtualAddr + (startPage * PageSize), PageSize);
-			*/
-			
-		printf("Start Point: %d\n",myNoff.code.inFileAddr +vpn * PageSize);
-			
-			
+			*/		
         x->ReadAt(&(machine->mainMemory[myNoff.code.virtualAddr  + pAddr]),
-			PageSize, myNoff.code.inFileAddr +  vpn * PageSize);
-    
-    
-    
-    
-    	
+			PageSize, myNoff.code.inFileAddr +  vpn * PageSize);    	
     }
   
-  
-  
-  
-
-    
    
     if (vpn *PageSize>= myNoff.initData.virtualAddr && vpn* PageSize < myNoff.initData.virtualAddr + myNoff.initData.size) {
     
@@ -251,8 +240,7 @@ AddrSpace::AssignPage( int vpn)
 			myNoff.initData.virtualAddr + (startPage * PageSize),PageSize);
 		*/
 			
-		printf("Start Point: %d\n",myNoff.initData.inFileAddr + vpn * PageSize);	
-				
+	
 	
         x->ReadAt(&(machine->mainMemory[myNoff.initData.virtualAddr + pAddr]),
 			PageSize, myNoff.initData.inFileAddr +  vpn* PageSize);
@@ -303,7 +291,7 @@ AddrSpace::~AddrSpace()
 	}
 	//char* filename = new char[64];
 	
-	//fileSystem->Remove(fileN);
+	fileSystem->Remove(fileN);
 	
 }
 
