@@ -182,7 +182,7 @@ AddrSpace::AddrSpace(OpenFile *executable)
 	
 	memMap->Print();	// Useful!
 	
-	memset(machine->mainMemory + pAddr, 0, size);
+	
     
 // zero out the entire address space, to zero the unitialized data segment 
 // and the stack segment
@@ -217,6 +217,7 @@ AddrSpace::AssignPage( int vpn)
 	printf("%s\n", fileN);
 	OpenFile * x = fileSystem->Open(fileN);
 	
+	memset(machine->mainMemory + pAddr, 0, size);
 	
 	if (vpn * PageSize >= myNoff.code.virtualAddr && vpn * PageSize < myNoff.code.virtualAddr + myNoff.code.size) {
 	
