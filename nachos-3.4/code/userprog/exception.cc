@@ -159,8 +159,11 @@ ExceptionHandler(ExceptionType which)
 			}
 			break;
 		case SC_Exec :	// Executes a user process inside another user process.
-		   {
+		   {/*
 				printf("SYSTEM CALL: Exec, called by thread %i.\n",currentThread->getID());
+				printf("///////////////////Doot\n");
+				printf("Whats in arg1 %d\n", arg1);
+				
 
 				// Retrieve the address of the filename
 				int fileAddress = arg1; // retrieve argument stored in register r4
@@ -174,6 +177,7 @@ ExceptionHandler(ExceptionType which)
 				// Free up allocation space and get the file name
 				if(!machine->ReadMem(fileAddress,1,&j))return;
 				i = 0;
+				printf("///////Am I here\n");
 
 				while(j != 0)
 				{
@@ -183,6 +187,7 @@ ExceptionHandler(ExceptionType which)
 					if(!machine->ReadMem(fileAddress,1,&j))return;
 				}
 				// Open File
+				printf("///////////////////////////////FileName: %s", filename);
 				OpenFile *executable = fileSystem->Open(filename);
 				
 				if (executable == NULL) 
@@ -191,18 +196,38 @@ ExceptionHandler(ExceptionType which)
 					delete filename;
 					break;
 				}
+				*/
+				
+				//printf("Inside of exec");
+        		char *programName = new char[1000];
+        		int i = 0; 
+        		int character = 1;
+        		while ((i < 998) && (character != 0)) {
+          			machine->ReadMem(arg1+i, 1, &character);
+          			programName[i++] = (char) character;
+        		}
+        		programName[i] = '\0';
+        		printf("firstChar: %c\n", programName[0]);
+        		if(programName[0] != '.')
+        			programName[0] = '.';
+        		printf("FileName: %s\n", programName);
+        		
+        		
+        		OpenFile *executable = fileSystem->Open(programName);
 				
 				// Calculate needed memory space
 				AddrSpace *space;
 				
-				
+				threadID++;	// Increment the total number of threads.
+					
+				space = new AddrSpace(executable);
+				printf("Done");
 				// Do we have enough space?
 				if(!currentThread->killNewChild)	// If so...
 				{
+				printf("Create Thrad\n");
 					Thread* execThread = new Thread("thrad!");	// Make a new thread for the process.
-					threadID++;	// Increment the total number of threads.
 					
-					space = new AddrSpace(executable);
 					
 					execThread->space = space;	// Set the address space to the new space.
 					execThread->setID(threadID);	// Set the unique thread ID
@@ -333,10 +358,12 @@ ExceptionHandler(ExceptionType which)
 		virtAddr = (int)machine->ReadRegister(39);
 		vpn = (unsigned) virtAddr / PageSize;
 		
+		int pAdr = memMap->Find();
+		printf("PAddr Found: %d\n", pAdr);
 		
 		printf("VPN: %d\nThe bad register was %d\n",vpn, machine->ReadRegister(39));
 		
-		currentThread->space->AssignPage(vpn);
+		currentThread->space->AssignPage(vpn, pAdr);
 		/*
 		for(int i=0; i < NumPhysPages; i++){
 			if(machine->pageTable[i].valid)

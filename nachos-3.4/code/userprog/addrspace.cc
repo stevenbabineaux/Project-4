@@ -18,8 +18,10 @@
 #include "copyright.h"
 #include "system.h"
 #include "addrspace.h"
+#include "list.h"
 extern int * task4;
 extern int * task5;
+List * pageNumberList = new List();
 //----------------------------------------------------------------------
 // SwapHeader
 // 	Do little endian to big endian conversion on the bytes in the 
@@ -57,8 +59,7 @@ SwapHeader (NoffHeader *noffH)
 //	"executable" is the file containing the object code to load into memory
 //----------------------------------------------------------------------
 
-AddrSpace::AddrSpace(OpenFile *executable)
-{
+AddrSpace::AddrSpace(OpenFile *executable){
 	if(currentThread->getID() >= 1000)
 	{
 		
@@ -66,13 +67,6 @@ AddrSpace::AddrSpace(OpenFile *executable)
 		return;
 		
 	}
-	
-	
-	*task4 = 10;
-	printf("////////////////////////////////////////////////// %d\n", *task4);
-	
-	*task5 = 25;
-	printf("////////////////////////////////////////////////// %d\n", *task5);
 		
     
     unsigned int i, counter;
@@ -142,22 +136,33 @@ AddrSpace::AddrSpace(OpenFile *executable)
 			if(counter == 0)
 				startPage = i;	//startPage is a class data member
 								//Should it be public or private? (Currently private)
-			counter++;
+			counter++;111
 		}
 		else
 			counter = 0;
 	}
 	*/
 	DEBUG('a', "%i contiguous blocks found for %i pages\n", counter, numPages);
-
+	if(numPages > memMap->NumClear()){
+		while(numPages > memMap->NumClear()){
+			int replaceSpot = (int)pageNumberList->Remove();
+			memset(machine->mainMemory + replaceSpot * PageSize, '\0', PageSize);
+			memMap->Clear(replaceSpot);
+			printf("in while\n");
+		}
+		printf("after while loop\n");
+	}
 	//If no memory available, terminate
-	if(numPages > memMap->NumClear())
-	{
+	/*if(numPages > memMap->NumClear())
+	{	
+
+		printf("NumPages %d\n numClear %d\n", numPages, memMap->NumClear());
+		//memMap->Print();
 		printf("Not enough memory for new process; terminating!.\n");
 		currentThread->killNewChild = true;
 
 		return;
-	}
+	}*/
 
 	//If we get past the if statement, then there was sufficient space
 	space = true;
@@ -184,11 +189,10 @@ AddrSpace::AddrSpace(OpenFile *executable)
 		//to indicate that the memory is in use
 		//memMap->Mark(i + startPage);
     }
-	
-	memMap->Print();	// Useful!
-	
-	
     
+    
+	memMap->Print();	// Useful!
+ 
 // zero out the entire address space, to zero the unitialized data segment 
 // and the stack segment
 //    bzero(machine->mainMemory, size); rm for Solaris
@@ -207,12 +211,11 @@ AddrSpace::AddrSpace(OpenFile *executable)
 }
 
 
-
 void
-AddrSpace::AssignPage( int vpn)
+AddrSpace::AssignPage( int vpn, int pAdr)
 {
 
-	startPage = memMap->Find();
+	startPage = pAdr;
 	
 	pageTable[vpn].valid = TRUE;
 	memMap->Print();
@@ -241,27 +244,14 @@ AddrSpace::AssignPage( int vpn)
         DEBUG('a', "Initializing data segment, at 0x%x, size %d\n", 
 			myNoff.initData.virtualAddr + (startPage * PageSize),PageSize);
 		*/
-			
-	
 	
         x->ReadAt(&(machine->mainMemory[myNoff.initData.virtualAddr + pAddr]),
 			PageSize, myNoff.initData.inFileAddr +  vpn* PageSize);
 	}
 	
-	
-	
-	
+	//ADD THINGS TO THE pageNumberList
+	pageNumberList->Append((void*)startPage);
 	delete x;
-	
-	
-
-	
-    //memset(machine->mainMemory + pAddr, 0, size);
-
-
-
-	
-	
 
 }
 
@@ -282,11 +272,16 @@ AddrSpace::~AddrSpace()
 	// Only clear the memory if it was set to begin with
 	// which in turn only happens after space is set to true
 	int pagebegin = machine->pageTable[0].virtualPage;
+	printf("Begin Page: %d\n", pagebegin);
 	if(space)
 	{
-		for(int i = pagebegin; i < numPages + pagebegin; i++)	// We need an offset of startPage + numPages for clearing.
-			memMap->Clear(i);
+		for(int i = 0; i < numPages; i++){	// We need an offset of startPage + numPages for clearing.
+			if(pageTable[i].physicalPage < NumPhysPages && pageTable[i].physicalPage >= 0){
+			printf("Physical Page Delete: %d\n", pageTable[i].physicalPage);
+			memMap->Clear(machine->pageTable[i].physicalPage);
+			}
 
+		}
 		delete pageTable;
 
 		memMap->Print();
@@ -338,7 +333,10 @@ AddrSpace::InitRegisters()
 //----------------------------------------------------------------------
 
 void AddrSpace::SaveState() 
-{}
+{
+	pageTable = machine->pageTable;
+	numPages = machine->pageTableSize;
+}
 
 //----------------------------------------------------------------------
 // AddrSpace::RestoreState

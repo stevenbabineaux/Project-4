@@ -27,11 +27,12 @@ class AddrSpace {
     ~AddrSpace();			// De-allocate an address space
     
     OpenFile * myFile;
-    void AssignPage( int addr);
+    void AssignPage( int addr, int pAdr);
+    int DynamicPageReplacement();
 	noffHeader myNoff;
 	int size;
 	bool space;
-	char fileN[64];
+	char * fileN;
 	int pAddr;
     void InitRegisters();		// Initialize user-level CPU registers,
 					// before jumping to user code

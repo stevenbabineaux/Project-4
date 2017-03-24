@@ -14,13 +14,13 @@
 
 int i;
 int a;
-int arr[15];
+int arr[1500];
 
 int
 main()
 {
 
-	//Write("------------------------Doot Me Up Inside\n",1,1);
+	//Write("Doot Me Up Inside\n",1,1);
 
 	
 	for(i = 0; i < 1500; i++){

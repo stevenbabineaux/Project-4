@@ -27,7 +27,7 @@ class AddrSpace {
     ~AddrSpace();			// De-allocate an address space
     
     OpenFile * myFile;
-    void AssignPage( int addr);
+    void AssignPage( int addr, int pAdr);
 	noffHeader myNoff;
 	int size;
 	bool space;
