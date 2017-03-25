@@ -28,7 +28,7 @@ class AddrSpace {
     
     OpenFile * myFile;
     void AssignPage( int addr, int pAdr);
-    int DynamicPageReplacement();
+    void ReplacePage(int addr, int repAdr);
 	noffHeader myNoff;
 	int size;
 	bool space;

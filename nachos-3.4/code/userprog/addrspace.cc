@@ -21,7 +21,7 @@
 #include "list.h"
 extern int * task4;
 extern int * task5;
-List * pageNumberList = new List();
+
 //----------------------------------------------------------------------
 // SwapHeader
 // 	Do little endian to big endian conversion on the bytes in the 
@@ -60,9 +60,16 @@ SwapHeader (NoffHeader *noffH)
 //----------------------------------------------------------------------
 
 AddrSpace::AddrSpace(OpenFile *executable){
-	if(currentThread->getID() >= 1000)
+	if(currentThread->getID() >= 2000)
 	{
-		
+		printf("Thread Limit Exceeded. Terminating!\n");
+		for(int i = 0; i < threadID; i++){
+			char * files = new char[100];
+			sprintf(files, "%d.swap", i);
+			fileSystem->Remove(files);
+			delete files;
+		}
+		Cleanup();
 		currentThread->Finish();
 		return;
 		
@@ -144,8 +151,8 @@ AddrSpace::AddrSpace(OpenFile *executable){
 	*/
 	DEBUG('a', "%i contiguous blocks found for %i pages\n", counter, numPages);
 	
-	printf("S:LKFJSD:LKJF:SLDKJF:LSDKJF:LSDKJF %d", numPages);
-	
+	printf("S:LKFJSD:LKJF:SLDKJF:LSDKJF:LSDKJF %d\n", numPages);
+	/*
 	if(*task4 == 1){ //FIFO
 		printf("inside fifo\n");
 		if(numPages > memMap->NumClear()){
@@ -159,7 +166,7 @@ AddrSpace::AddrSpace(OpenFile *executable){
 		}
 	} else if(*task4 == 2){ //random page replacement
 		printf("inside random\n");
-		printf("NumPages is: %d NumClear is: %d", numPages, memMap->NumClear());
+		printf("NumPages is: %d \nNumClear is: %d\n", numPages, memMap->NumClear());
 		if(numPages > memMap->NumClear()){
 			while(numPages > memMap->NumClear()){
 				printf("IM IN HERE\n");
@@ -187,7 +194,7 @@ AddrSpace::AddrSpace(OpenFile *executable){
 	}
 	
 	
-
+*/
 	//If we get past the if statement, then there was sufficient space
 	space = true;
 
@@ -274,11 +281,52 @@ AddrSpace::AssignPage( int vpn, int pAdr)
 	}
 	
 	//ADD THINGS TO THE pageNumberList
-	pageNumberList->Append((void*)startPage);
+	
 	delete x;
 
 }
 
+void
+AddrSpace::ReplacePage(int vAdr, int repAdr){
+	printf("Virtual Address: %d   Replacement Physical Address: %d\n", vAdr, repAdr);
+	pageTable[vAdr].valid = TRUE;
+	pageTable[vAdr].physicalPage = repAdr;
+	pAddr = repAdr * PageSize;
+	OpenFile * x = fileSystem->Open(fileN);
+	
+	
+	if (vAdr * PageSize >= myNoff.code.virtualAddr && vAdr * PageSize < myNoff.code.virtualAddr + myNoff.code.size) {
+	
+	/*
+        DEBUG('a', "Initializing code segment, at 0x%x, size %d\n", 
+			myNoff.code.virtualAddr + (startPage * PageSize), PageSize);
+			*/		
+        x->ReadAt(&(machine->mainMemory[myNoff.code.virtualAddr  + pAddr]),
+			PageSize, myNoff.code.inFileAddr +  vAdr * PageSize);    	
+    }
+  
+   
+    if (vAdr *PageSize>= myNoff.initData.virtualAddr && vAdr* PageSize < myNoff.initData.virtualAddr + myNoff.initData.size) {
+    
+    /*
+        DEBUG('a', "Initializing data segment, at 0x%x, size %d\n", 
+			myNoff.initData.virtualAddr + (startPage * PageSize),PageSize);
+		*/
+	
+        x->ReadAt(&(machine->mainMemory[myNoff.initData.virtualAddr + pAddr]),
+			PageSize, myNoff.initData.inFileAddr +  vAdr* PageSize);
+	}
+	
+	//ADD THINGS TO THE pageNumberList
+	
+	delete x;
+
+	
+
+
+
+
+}
 
 
 

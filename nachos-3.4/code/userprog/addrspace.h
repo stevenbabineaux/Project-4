@@ -28,6 +28,7 @@ class AddrSpace {
     
     OpenFile * myFile;
     void AssignPage( int addr, int pAdr);
+    void ReplacePage(int addr, int repAdr); // addr  = Virtual Address  repAdr = Replacement Physical Address
 	noffHeader myNoff;
 	int size;
 	bool space;

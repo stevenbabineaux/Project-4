@@ -34,7 +34,8 @@
 static int SRead(int addr, int size, int id);
 static void SWrite(char *buffer, int size, int id);
 Thread * getID(int toGet);
-
+extern int * task4;
+List * pageNumberList = new List();
 
 // end FA98
 
@@ -199,6 +200,9 @@ ExceptionHandler(ExceptionType which)
 				*/
 				
 				//printf("Inside of exec");
+				printf("HELLO INSIDE OF EXEC?////////////////////////////???\n");
+				
+				
         		char *programName = new char[64];
         		int i = 0; 
         		int character = 1;
@@ -360,11 +364,49 @@ ExceptionHandler(ExceptionType which)
 		vpn = (unsigned) virtAddr / PageSize;
 		
 		int pAdr = memMap->Find();
-		printf("PAddr Found: %d\n", pAdr);
+		if(pAdr == -1){
+			switch(*task4){
+				case 1: // FIFO
+				{
+					pAdr = (int)pageNumberList->Remove();
+					machine->pageTable[vpn].physicalPage = NULL;
+					currentThread->space->ReplacePage(vpn, pAdr);
+					pageNumberList->Append((void*)pAdr);
+					break;
+					
+				
+				}
+				case 2:
+				{
+					while(true){
+						pAdr = Random() % (NumPhysPages - 1);
+						if(memMap->Test(pAdr)){
+							printf("PAddr Found: %d\n", pAdr);
+							break;
+						}
+					}
+					machine->pageTable[vpn].physicalPage = NULL;
+					currentThread->space->ReplacePage(vpn, pAdr);
+					break;
+					
+ 				}
+			 //Random
+				
+				default:
+					Cleanup(); // Break Nachos
+					break;
+			}
+		}
+	
 		
-		printf("VPN: %d\nThe bad register was %d\n",vpn, machine->ReadRegister(39));
 		
-		currentThread->space->AssignPage(vpn, pAdr);
+		else{
+			printf("PAddr Found: %d\n", pAdr);
+			pageNumberList->Append((void*)pAdr);
+			printf("VPN: %d\nThe bad register was %d\n",vpn, machine->ReadRegister(39));
+			
+			currentThread->space->AssignPage(vpn, pAdr);
+		}
 		/*
 		for(int i=0; i < NumPhysPages; i++){
 			if(machine->pageTable[i].valid)
