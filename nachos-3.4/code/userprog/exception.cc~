@@ -205,7 +205,6 @@ ExceptionHandler(ExceptionType which)
         		while ((i < 998) && (character != 0)) {
           			machine->ReadMem(arg1+i, 1, &character);
           			programName[i++] = (char) character;
-          			printf("thing is %c", programName[i]);
         		}
         		programName[i] = '\0';
         		printf("firstChar: %c\n", programName[0]);
@@ -215,6 +214,7 @@ ExceptionHandler(ExceptionType which)
         		
         		
         		OpenFile *executable = fileSystem->Open(programName);
+        		delete programName;
 				
 				// Calculate needed memory space
 				AddrSpace *space;

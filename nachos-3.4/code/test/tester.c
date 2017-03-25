@@ -3,14 +3,15 @@
 int
 main()
 {	Exec("../test/size1Tes");
-	Write("Hakuna Matata1\n", 1 , 1);
+	//Write("Hakuna Matata1\n", 1 , 1);
 	
 	Yield();
 	
+	
+	//Exec("../test/sizeTest1");
+	//Write("Hakuna Matata2\n", 1 , 1);	
+	//Yield();
 	/*
-	Exec("../test/sizeTest1");
-	Write("Hakuna Matata2\n", 1 , 1);	
-	Yield();
 	Exec("../test/sizeTest1");
 	Write("Hakuna Matata3\n", 1 , 1);
 	Yield();

@@ -199,10 +199,10 @@ ExceptionHandler(ExceptionType which)
 				*/
 				
 				//printf("Inside of exec");
-        		char *programName = new char[1000];
+        		char *programName = new char[64];
         		int i = 0; 
         		int character = 1;
-        		while ((i < 998) && (character != 0)) {
+        		while ((i < 62) && (character != 0)) {
           			machine->ReadMem(arg1+i, 1, &character);
           			programName[i++] = (char) character;
         		}
@@ -214,6 +214,7 @@ ExceptionHandler(ExceptionType which)
         		
         		
         		OpenFile *executable = fileSystem->Open(programName);
+        		delete programName;
 				
 				// Calculate needed memory space
 				AddrSpace *space;

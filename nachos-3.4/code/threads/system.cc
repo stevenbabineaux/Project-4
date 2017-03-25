@@ -135,14 +135,14 @@ Initialize(int argc, char **argv)
 	    }
 	    else if (!strcmp(*(argv + 1),"0")) {
 	    	printf("Disable Virtual Memory (Demand Paging Only)\n");
-			*task4 = 1;
+			*task4 = 0;
 	    }
 	    else if (!strcmp(*(argv + 1),"1")) {
-			*task4 = 2;
+			*task4 = 1;
 	    	printf("FIFO Page Replacement\n");
 	    }
 	    else if (!strcmp(*(argv + 1),"2")) {
-			*task4 = 3;
+			*task4 = 2;
 			printf("Random Page Replacement\n");
 	    }
 	    else{
