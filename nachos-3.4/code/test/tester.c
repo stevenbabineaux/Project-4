@@ -4,7 +4,7 @@ int
 main()
 {	
 	Exec("../test/size1Tes");
-	Write("Hakuna Matata1\n", 1 , 1);
+	Write("Hakuna Matata\n", 1 , 1);
 	
 	Yield();
 	

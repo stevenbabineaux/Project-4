@@ -47,6 +47,7 @@ static void SWrite(char *buffer, int size, int id);
 Thread * getID(int toGet);
 extern int * task4;
 List * pageNumberList = new List();
+extern bool extraOutput;
 
 
 InvertedPageTable ipt[NumPhysPages];
@@ -184,10 +185,11 @@ ExceptionHandler(ExceptionType which)
           			programName[i++] = (char) character;
         		}
         		programName[i] = '\0';
-        		printf("firstChar: %c\n", programName[0]);
         		if(programName[0] != '.')
         			programName[0] = '.';
-        		printf("FileName: %s\n", programName);
+        		if(extraOutput){
+					printf("Loading Process %s\n\n", programName);
+   				}
         		
         		
         		OpenFile *executable = fileSystem->Open(programName);
@@ -199,11 +201,11 @@ ExceptionHandler(ExceptionType which)
 				threadID++;	// Increment the total number of threads.
 					
 				space = new AddrSpace(executable);
-				printf("Done");
+				//printf("Done");
 				// Do we have enough space?
 				if(!currentThread->killNewChild)	// If so...
 				{
-				printf("Create Thrad\n");
+				//printf("Create Thrad\n");
 					Thread* execThread = new Thread("thrad!");	// Make a new thread for the process.
 					
 					
@@ -341,12 +343,18 @@ ExceptionHandler(ExceptionType which)
 
 	case PageFaultException:
 	{
-		printf("Page Fault:\n");
+		if(extraOutput){
+			printf("\nPage Fault:\n");
+		}
+		
 		unsigned int vpn;
 		int virtAddr;
 		virtAddr = (int)machine->ReadRegister(39);
 		vpn = (unsigned) virtAddr / PageSize;
-		
+		if(extraOutput){
+			printf("Page availability before adding the process:\n");
+				memMap->Print();
+		}
 		int pAdr = memMap->Find();
 		if(pAdr == -1){
 			switch(*task4){
@@ -359,7 +367,6 @@ ExceptionHandler(ExceptionType which)
 					threadToClear->space->RestoreState();
 					machine->pageTable[vpn].physicalPage = NULL;
 					currentThread->space->RestoreState();
-					printf("PAddr Found: %d\n", pAdr);
 					currentThread->space->ReplacePage(vpn, pAdr);
 					ipt[pAdr].process = currentThread;
 					ipt[pAdr].vAddress = vpn;
@@ -372,7 +379,6 @@ ExceptionHandler(ExceptionType which)
 					while(true){
 						pAdr = Random() % (NumPhysPages - 1);
 						if(memMap->Test(pAdr)){
-							printf("PAddr Found: %d\n", pAdr);
 							break;
 						}
 					}
@@ -395,18 +401,23 @@ ExceptionHandler(ExceptionType which)
 					Cleanup(); // Break Nachos
 					break;
 			}
+			if(extraOutput){
+				printf("Process %d requests VPN: %d\n",
+					currentThread->getID(), vpn);
+				printf("Assigning Frame %d\n", pAdr);
+			}
 		}
 	
 		
 		
 		else{
-			printf("PAddr Found: %d\n", pAdr);
 			ipt[pAdr].process = currentThread;
 			ipt[pAdr].vAddress = vpn;
 			pageNumberList->Append((void*)pAdr);
 			if(extraOutput){
-				printf("Process %d requests VPN: %d\nThe bad register was %d\n",
-					currentThread->getID(), vpn, machine->ReadRegister(39));			
+				printf("Process %d requests VPN: %d\n",
+					currentThread->getID(), vpn);
+				printf("Assigning Frame %d\n", pAdr);
 			}
 
 			currentThread->space->AssignPage(vpn, pAdr);
@@ -420,7 +431,6 @@ ExceptionHandler(ExceptionType which)
 		
 		}
 		*/
-		printf("\n");
 		//interrupt->Halt();
 		//for(int f = 0; i < machine->NumPhysPages; i++){
 			

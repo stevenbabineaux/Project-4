@@ -83,9 +83,11 @@ AddrSpace::AddrSpace(OpenFile *executable){
 		
     if(!done){
     	printf("Number of physical pages: %d\n", NumPhysPages);
-        printf("Page Size in bytes: %d\n", PageSize);
+        printf("Page Size in bytes: %d\n\n", PageSize);
     	done = TRUE;
+    
     }
+    
     
     unsigned int i, counter;
 	space = false;
@@ -111,7 +113,6 @@ AddrSpace::AddrSpace(OpenFile *executable){
     
     sprintf(fileX, "%d.swap", threadID);
     strcpy(fileN, fileX);
-    //printf("%s\n", filename);
     
     fileSystem->Create(fileX, size);	// ASSERTION FAILED
     
@@ -232,7 +233,7 @@ AddrSpace::AddrSpace(OpenFile *executable){
     
     
     if(extraOutput){
-    	memMap->Print();
+    	//memMap->Print();
     }
 		// Useful!
  
@@ -257,13 +258,9 @@ AddrSpace::AddrSpace(OpenFile *executable){
 void
 AddrSpace::AssignPage( int vpn, int pAdr)
 {
-
-	
 	startPage = pAdr;
 	pageTable[vpn].valid = TRUE;
-	if(extraOutput){
-    	memMap->Print();
-    }
+	
 //	machine->pageTable[vpn].valid = TRUE;
 	pageTable[vpn].physicalPage = startPage;
 	pAddr = startPage * PageSize;
@@ -295,7 +292,10 @@ AddrSpace::AssignPage( int vpn, int pAdr)
 	}
 	
 	//ADD THINGS TO THE pageNumberList
-	
+	if(extraOutput){
+    	printf("Page availability after adding the process: \n");
+    	memMap->Print();
+    }
 	delete x;
 
 }
@@ -381,8 +381,10 @@ AddrSpace::~AddrSpace()
 
 		}
 		delete pageTable;
-
-		memMap->Print();
+		if(extraOutput){
+			memMap->Print();
+		}
+		
 	}
 	
 	//char* filename = new char[64];
