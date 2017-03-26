@@ -83,7 +83,7 @@ AddrSpace::AddrSpace(OpenFile *executable){
 		
     if(!done){
     	printf("Number of physical pages: %d\n", NumPhysPages);
-        printf("Page Size in bytes: %d\n", PageSize);
+        printf("Page Size in bytes: %d\n\n", PageSize);
     	done = TRUE;
     
     }

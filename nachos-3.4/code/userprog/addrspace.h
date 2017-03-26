@@ -18,6 +18,7 @@
 #include "noff.h"
 
 
+
 #define UserStackSize		1024 	// increase this as necessary!
 
 class AddrSpace {
@@ -46,7 +47,10 @@ class AddrSpace {
     void SaveState();			// Save/restore address space-specific
     void RestoreState();		// info on a context switch 
 
-  private:
+  private:struct table{
+		TranslationEntry * innerTable[4];
+	};
+  	table OuterPageTable[4];
     TranslationEntry *pageTable;	// Assume linear page table translation
 					// for now!
     unsigned int numPages;		// Number of pages in the virtual 
