@@ -29,7 +29,18 @@
 #include "addrspace.h"   // FA98
 #include "sysdep.h"   // FA98
 
+
 // begin FA98
+
+
+
+
+
+struct InvertedPageTable{
+	Thread * process;
+	int  vAddress;
+	
+};
 
 static int SRead(int addr, int size, int id);
 static void SWrite(char *buffer, int size, int id);
@@ -37,9 +48,13 @@ Thread * getID(int toGet);
 extern int * task4;
 List * pageNumberList = new List();
 
+
+InvertedPageTable ipt[NumPhysPages];
+
+
 // end FA98
 
-//----------------------------------------------------------------------
+//------------------------------------------------s----------------------
 // ExceptionHandler
 // 	Entry point into the Nachos kernel.  Called when a user program
 //	is executing, and either does a syscall, or generates an addressing
@@ -286,6 +301,16 @@ ExceptionHandler(ExceptionType which)
 				
 				if(currentThread->space)	// Delete the used memory from the process.
 					delete currentThread->space;
+				for(int i = 0; i < NumPhysPages ; i++){
+					
+					if(ipt[i].process != NULL){
+						printf("Process ID: %d, Physical Page: %d\n", ipt[i].process->getID(), i);
+						if(ipt[i].process == currentThread){
+							ipt[i].process = NULL;
+							ipt[i].vAddress = NULL;
+						}
+					}
+				}
 				currentThread->Finish();	// Delete the thread.
 
 				break;
@@ -369,9 +394,16 @@ ExceptionHandler(ExceptionType which)
 				case 1: // FIFO
 				{
 					pAdr = (int)pageNumberList->Remove();
-					machine->pageTable[vpn].physicalPage = NULL;
-					currentThread->space->ReplacePage(vpn, pAdr);
+					Thread * threadToClear = ipt[pAdr].process;
+					threadToClear->space->UpdateFile(ipt[pAdr].vAddress, pAdr);
 					pageNumberList->Append((void*)pAdr);
+					threadToClear->space->RestoreState();
+					machine->pageTable[vpn].physicalPage = NULL;
+					currentThread->space->RestoreState();
+					printf("PAddr Found: %d\n", pAdr);
+					currentThread->space->ReplacePage(vpn, pAdr);
+					ipt[pAdr].process = currentThread;
+					ipt[pAdr].vAddress = vpn;
 					break;
 					
 				
@@ -385,14 +417,22 @@ ExceptionHandler(ExceptionType which)
 							break;
 						}
 					}
+					Thread* threadToClear = ipt[pAdr].process;
+					threadToClear->space->UpdateFile(ipt[pAdr].vAddress, pAdr);
+					threadToClear->space->RestoreState();
 					machine->pageTable[vpn].physicalPage = NULL;
+					currentThread->space->RestoreState();
 					currentThread->space->ReplacePage(vpn, pAdr);
+					ipt[pAdr].process = currentThread;
+					ipt[pAdr].vAddress = vpn;
 					break;
 					
  				}
 			 //Random
 				
 				default:
+					printf("Could not find space to hold requested process! Crashing System!\n");
+					
 					Cleanup(); // Break Nachos
 					break;
 			}
@@ -402,9 +442,10 @@ ExceptionHandler(ExceptionType which)
 		
 		else{
 			printf("PAddr Found: %d\n", pAdr);
+			ipt[pAdr].process = currentThread;
+			ipt[pAdr].vAddress = vpn;
 			pageNumberList->Append((void*)pAdr);
 			printf("VPN: %d\nThe bad register was %d\n",vpn, machine->ReadRegister(39));
-			
 			currentThread->space->AssignPage(vpn, pAdr);
 		}
 		/*
@@ -444,6 +485,7 @@ ExceptionHandler(ExceptionType which)
 			ASSERT(FALSE);  //Not the way of handling an exception.
 		if(currentThread->space)	// Delete the used memory from the process.
 			delete currentThread->space;
+		
 		currentThread->Finish();	// Delete the thread.
 		break;
 

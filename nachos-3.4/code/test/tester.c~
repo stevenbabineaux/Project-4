@@ -3,12 +3,12 @@
 int
 main()
 {	
-	Exec("../test/size1Tes");
+	//Exec("../test/size1Tes");
 	Write("Hakuna Matata1\n", 1 , 1);
 	
 	Yield();
 	
-	
+	/*
 	Exec("../test/sizeTest1");
 
 	Yield();
@@ -32,7 +32,7 @@ main()
 	Yield();
 	Exec("../test/sizeTest1");
 	
-	
+	*/
 	Exit(0);
 
 }

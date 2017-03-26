@@ -19,8 +19,13 @@
 #include "system.h"
 #include "addrspace.h"
 #include "list.h"
+
+
+
+
 extern int * task4;
 extern int * task5;
+extern Thread *IPT[32];
 
 //----------------------------------------------------------------------
 // SwapHeader
@@ -67,6 +72,7 @@ AddrSpace::AddrSpace(OpenFile *executable){
 			char * files = new char[100];
 			sprintf(files, "%d.swap", i);
 			fileSystem->Remove(files);
+			delete files;
 		}
 		Cleanup();
 		currentThread->Finish();
@@ -245,12 +251,12 @@ void
 AddrSpace::AssignPage( int vpn, int pAdr)
 {
 
-	startPage = pAdr;
 	
+	startPage = pAdr;
 	pageTable[vpn].valid = TRUE;
 	memMap->Print();
 //	machine->pageTable[vpn].valid = TRUE;
-	machine->pageTable[vpn].physicalPage = startPage;
+	pageTable[vpn].physicalPage = startPage;
 	pAddr = startPage * PageSize;
 	
 	OpenFile * x = fileSystem->Open(fileN);
@@ -327,6 +333,18 @@ AddrSpace::ReplacePage(int vAdr, int repAdr){
 
 }
 
+void
+AddrSpace::UpdateFile(int vAddr, int pAdr)
+{
+
+	OpenFile * x = fileSystem->Open(fileN);
+	
+	
+	x->WriteAt(&(machine->mainMemory[myNoff.code.virtualAddr + pAdr * PageSize]), PageSize, myNoff.code.inFileAddr + vAddr * PageSize);
+	x->WriteAt(&(machine->mainMemory[myNoff.initData.virtualAddr, + pAdr * PageSize]), PageSize, myNoff.initData.inFileAddr + vAddr *  PageSize);
+	delete x;
+}
+
 
 
 
@@ -348,7 +366,7 @@ AddrSpace::~AddrSpace()
 	{
 		for(int i = 0; i < numPages; i++){	// We need an offset of startPage + numPages for clearing.
 			if(pageTable[i].physicalPage < NumPhysPages && pageTable[i].physicalPage >= 0){
-			printf("Physical Page Delete: %d\n", pageTable[i].physicalPage);
+			//printf("Physical Page Delete: %d\n", pageTable[i].physicalPage);
 			memMap->Clear(machine->pageTable[i].physicalPage);
 			}
 
@@ -357,9 +375,10 @@ AddrSpace::~AddrSpace()
 
 		memMap->Print();
 	}
+	
 	//char* filename = new char[64];
 	
-	fileSystem->Remove(fileN);
+	//fileSystem->Remove(fileN);
 	
 }
 

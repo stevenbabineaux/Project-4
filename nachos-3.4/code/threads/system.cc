@@ -24,6 +24,10 @@ bool pageFlag;
 int * task4 = new int();
 int * task5 = new int();
 
+
+
+
+
 BitMap * memMap;
 
 #ifdef FILESYS_NEEDED
@@ -34,6 +38,7 @@ FileSystem  *fileSystem;
 Machine *machine;	// user program memory and registers
 List* activeThreads;
 int threadID;
+
 #endif
 
 #ifdef FILESYS

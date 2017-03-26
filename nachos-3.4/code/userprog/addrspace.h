@@ -17,6 +17,7 @@
 #include "filesys.h"
 #include "noff.h"
 
+
 #define UserStackSize		1024 	// increase this as necessary!
 
 class AddrSpace {
@@ -28,9 +29,12 @@ class AddrSpace {
     
     OpenFile * myFile;
     void AssignPage( int addr, int pAdr);
-    void ReplacePage(int addr, int repAdr); // addr  = Virtual Address  repAdr = Replacement Physical Address
+    void ReplacePage(int addr,  int repAdr); // addr  = Virtual Address  repAdr = Replacement Physical Address
+    void UpdateFile(int vaddr, int paddr);
 	noffHeader myNoff;
+	
 	int size;
+	unsigned int startPage;
 	bool space;
 	char * fileN;
 	int pAddr;
@@ -47,7 +51,7 @@ class AddrSpace {
 					// for now!
     unsigned int numPages;		// Number of pages in the virtual 
 					// address space
-	unsigned int startPage;		//Page number that the program starts at
+			//Page number that the program starts at
 								//in physical memory
 			//Boolean to remember if there was enough space or not
 };
