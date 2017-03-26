@@ -23,6 +23,7 @@ int memChoice;
 bool pageFlag;
 int * task4 = new int();
 int * task5 = new int();
+bool extraOutput = FALSE;
 
 
 
@@ -152,7 +153,11 @@ Initialize(int argc, char **argv)
 	    }
 	    else{
             printf("Not a valid input. Input 0, 1, 2.\n"); 
-        }
+        } 
+	} else if(!strcmp(*argv, "-E")) {
+		if(*(argv+1) == NULL)
+			extraOutput = TRUE;
+		printf("-E selected additional output will be displayed.\n");
 	}
 #ifdef USER_PROGRAM
 	if (!strcmp(*argv, "-s"))

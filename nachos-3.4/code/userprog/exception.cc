@@ -175,49 +175,7 @@ ExceptionHandler(ExceptionType which)
 			}
 			break;
 		case SC_Exec :	// Executes a user process inside another user process.
-		   {/*
-				printf("SYSTEM CALL: Exec, called by thread %i.\n",currentThread->getID());
-				printf("///////////////////Doot\n");
-				printf("Whats in arg1 %d\n", arg1);
-				
-
-				// Retrieve the address of the filename
-				int fileAddress = arg1; // retrieve argument stored in register r4
-
-				// Read file name into the kernel space
-				char *filename = new char[100];
-				
-				for(int m = 0; m < 100; m++)
-					filename[m] = NULL;
-
-				// Free up allocation space and get the file name
-				if(!machine->ReadMem(fileAddress,1,&j))return;
-				i = 0;
-				printf("///////Am I here\n");
-
-				while(j != 0)
-				{
-					filename[i]=(char)j;
-					fileAddress += 1;
-					i++;
-					if(!machine->ReadMem(fileAddress,1,&j))return;
-				}
-				// Open File
-				printf("///////////////////////////////FileName: %s", filename);
-				OpenFile *executable = fileSystem->Open(filename);
-				
-				if (executable == NULL) 
-				{
-					printf("Unable to open file %s\n", filename);
-					delete filename;
-					break;
-				}
-				*/
-				
-				//printf("Inside of exec");
-				printf("HELLO INSIDE OF EXEC?////////////////////////////???\n");
-				
-				
+		   {
         		char *programName = new char[64];
         		int i = 0; 
         		int character = 1;
@@ -383,6 +341,7 @@ ExceptionHandler(ExceptionType which)
 
 	case PageFaultException:
 	{
+		printf("Page Fault:\n");
 		unsigned int vpn;
 		int virtAddr;
 		virtAddr = (int)machine->ReadRegister(39);
@@ -445,7 +404,11 @@ ExceptionHandler(ExceptionType which)
 			ipt[pAdr].process = currentThread;
 			ipt[pAdr].vAddress = vpn;
 			pageNumberList->Append((void*)pAdr);
-			printf("VPN: %d\nThe bad register was %d\n",vpn, machine->ReadRegister(39));
+			if(extraOutput){
+				printf("Process %d requests VPN: %d\nThe bad register was %d\n",
+					currentThread->getID(), vpn, machine->ReadRegister(39));			
+			}
+
 			currentThread->space->AssignPage(vpn, pAdr);
 		}
 		/*

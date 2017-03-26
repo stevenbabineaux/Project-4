@@ -25,7 +25,8 @@
 
 extern int * task4;
 extern int * task5;
-extern Thread *IPT[32];
+extern bool extraOutput;
+bool done = FALSE;
 
 //----------------------------------------------------------------------
 // SwapHeader
@@ -80,6 +81,11 @@ AddrSpace::AddrSpace(OpenFile *executable){
 		
 	}
 		
+    if(!done){
+    	printf("Number of physical pages: %d\n", NumPhysPages);
+        printf("Page Size in bytes: %d\n", PageSize);
+    	done = TRUE;
+    }
     
     unsigned int i, counter;
 	space = false;
@@ -155,8 +161,6 @@ AddrSpace::AddrSpace(OpenFile *executable){
 	}
 	*/
 	DEBUG('a', "%i contiguous blocks found for %i pages\n", counter, numPages);
-	
-	printf("S:LKFJSD:LKJF:SLDKJF:LSDKJF:LSDKJF %d\n", numPages);
 	/*
 	if(*task4 == 1){ //FIFO
 		printf("inside fifo\n");
@@ -227,7 +231,10 @@ AddrSpace::AddrSpace(OpenFile *executable){
     }
     
     
-	memMap->Print();	// Useful!
+    if(extraOutput){
+    	memMap->Print();
+    }
+		// Useful!
  
 // zero out the entire address space, to zero the unitialized data segment 
 // and the stack segment
@@ -254,7 +261,9 @@ AddrSpace::AssignPage( int vpn, int pAdr)
 	
 	startPage = pAdr;
 	pageTable[vpn].valid = TRUE;
-	memMap->Print();
+	if(extraOutput){
+    	memMap->Print();
+    }
 //	machine->pageTable[vpn].valid = TRUE;
 	pageTable[vpn].physicalPage = startPage;
 	pAddr = startPage * PageSize;
