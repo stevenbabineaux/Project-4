@@ -3,11 +3,8 @@
 int
 main()
 {	
-	Exec("../test/size1Tes");
+	Exec("../test/tester");
 	Write("Hakuna Matata\n", 1 , 1);
-	
-	Yield();
-
 	Exit(0);
 
 }

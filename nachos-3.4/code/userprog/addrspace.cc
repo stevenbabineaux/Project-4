@@ -499,7 +499,14 @@ AddrSpace::InitRegisters()
 
 void AddrSpace::SaveState() 
 {
-	pageTable = machine->pageTable;
+	if(twoLevel){
+		HPT = machine->HPTable;
+		
+	}
+	else{
+ 	   pageTable = machine->pageTable;
+ 	   
+	}
 	numPages = machine->pageTableSize;
 }
 

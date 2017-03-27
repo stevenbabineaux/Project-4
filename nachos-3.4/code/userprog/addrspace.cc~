@@ -388,9 +388,9 @@ void
 AddrSpace::UpdateFile(int vAddr, int pAdr)
 {
 	if(twoLevel)
-		HPT[vAdr / outerDivide][vAdr % outerDivide].physicalPage = NULL;
+		HPT[vAddr / outerDivide][vAddr % outerDivide].physicalPage = NULL;
 	else
-		pageTable[vAdr].physicalPage = NULL;
+		pageTable[vAddr].physicalPage = NULL;
 
 	OpenFile * x = fileSystem->Open(fileN);
 	
@@ -499,7 +499,14 @@ AddrSpace::InitRegisters()
 
 void AddrSpace::SaveState() 
 {
-	pageTable = machine->pageTable;
+	if(twoLevel){
+		HPT = machine->HPTable;
+		
+	}
+	else{
+ 	   pageTable = machine->pageTable;
+ 	   
+	}
 	numPages = machine->pageTableSize;
 }
 

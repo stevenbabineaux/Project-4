@@ -35,7 +35,7 @@ CPP = gcc -E
 INCDIR =-I../userprog -I../threads
 CFLAGS = -G 0 -c $(INCDIR)
 
-all: halt shell matmult sort loop whee derp tester sizeTest1 size1Tes
+all: halt shell matmult sort loop whee derp tester sizeTest1 size1Tes tester2 tester3
 
 start.o: start.s ../userprog/syscall.h
 	$(CPP) $(CPPFLAGS) start.c > strt.s
@@ -48,23 +48,35 @@ halt: halt.o start.o
 	$(LD) $(LDFLAGS) start.o halt.o -o halt.coff
 	../bin/coff2noff halt.coff halt
 	
-sizeTes.o: sizeTes.c
-	$(CC) $(CFLAGS) -c sizeTes.c
-sizeTes: sizeTes.o start.o
-	$(LD) $(LDFLAGS) start.o sizeTes.o -o sizeTes.coff
-	../bin/coff2noff sizeTes.coff sizeTes
+sizeTest1.o: sizeTest1.c
+	$(CC) $(CFLAGS) -c sizeTest1.c
+sizeTest1: sizeTest1.o start.o
+	$(LD) $(LDFLAGS) start.o sizeTest1.o -o sizeTest1.coff
+	../bin/coff2noff sizeTest1.coff sizeTest1
 
-size1Test1.o: size1Test1.c
-	$(CC) $(CFLAGS) -c size1Test1.c
-size1Test1: size1Test1.o start.o
-	$(LD) $(LDFLAGS) start.o size1Test1.o -o size1Test1.coff
-	../bin/coff2noff size1Test1.coff size1Test1
+size1Tes.o: size1Tes.c
+	$(CC) $(CFLAGS) -c size1Tes.c
+size1Tes: size1Tes.o start.o
+	$(LD) $(LDFLAGS) start.o size1Tes.o -o size1Tes.coff
+	../bin/coff2noff size1Tes.coff size1Tes
 
 tester.o: tester.c
 	$(CC) $(CFLAGS) -c tester.c
 tester: tester.o start.o
 	$(LD) $(LDFLAGS) start.o tester.o -o tester.coff
 	../bin/coff2noff tester.coff tester
+
+tester2.o: tester2.c
+	$(CC) $(CFLAGS) -c tester2.c
+tester2: tester2.o start.o
+	$(LD) $(LDFLAGS) start.o tester2.o -o tester2.coff
+	../bin/coff2noff tester2.coff tester2
+	
+tester3.o: tester3.c
+	$(CC) $(CFLAGS) -c testester3ter.c
+tester3: tester3.o start.o
+	$(LD) $(LDFLAGS) start.o tester3.o -o tester3.coff
+	../bin/coff2noff tester3.coff tester3
 
 shell.o: shell.c
 	$(CC) $(CFLAGS) -c shell.c
