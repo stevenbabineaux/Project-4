@@ -258,10 +258,11 @@ ExceptionHandler(ExceptionType which)
 					printf("Process %i exited normally!\n", currentThread->getID());
 				else
 					printf("ERROR: Process %i exited abnormally!\n", currentThread->getID());
-				
+				printf("Doot\n");
 				if(currentThread->space)	// Delete the used memory from the process.
 					delete currentThread->space;
 				for(int i = 0; i < NumPhysPages ; i++){
+					
 					
 					if(ipt[i].process != NULL){
 						printf("Process ID: %d, Physical Page: %d\n", ipt[i].process->getID(), i);
@@ -344,7 +345,7 @@ ExceptionHandler(ExceptionType which)
 	case PageFaultException:
 	{
 		if(extraOutput){
-			printf("Page Fault:\n");
+			printf("\nPage Fault:\n");
 		}
 		
 		unsigned int vpn;
@@ -364,9 +365,6 @@ ExceptionHandler(ExceptionType which)
 					Thread * threadToClear = ipt[pAdr].process;
 					threadToClear->space->UpdateFile(ipt[pAdr].vAddress, pAdr);
 					pageNumberList->Append((void*)pAdr);
-					threadToClear->space->RestoreState();
-					machine->pageTable[vpn].physicalPage = NULL;
-					currentThread->space->RestoreState();
 					currentThread->space->ReplacePage(vpn, pAdr);
 					ipt[pAdr].process = currentThread;
 					ipt[pAdr].vAddress = vpn;

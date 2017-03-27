@@ -92,7 +92,7 @@ AddrSpace::AddrSpace(OpenFile *executable){
     }
     
     
-    unsigned int i, counter;
+    unsigned int i, count;
 	space = false;
 
     executable->ReadAt((char *)&myNoff, sizeof(myNoff), 0);
@@ -149,7 +149,7 @@ AddrSpace::AddrSpace(OpenFile *executable){
 	//instead of total amount of pages
 	//This requires a global bitmap instance
 	
-	counter = 0;
+	count = 0;
 	/*
 	for(i = 0; i < NumPhysPages && counter < numPages; i++)
 	{
@@ -164,7 +164,7 @@ AddrSpace::AddrSpace(OpenFile *executable){
 			counter = 0;
 	}
 	*/
-	DEBUG('a', "%i contiguous blocks found for %i pages\n", counter, numPages);
+	//DEBUG('a', "%i contiguous blocks found for %i pages\n", counter, numPages);
 	/*
 	if(*task4 == 1){ //FIFO
 		printf("inside fifo\n");
@@ -217,15 +217,40 @@ AddrSpace::AddrSpace(OpenFile *executable){
     DEBUG('a', "Initializing address space, numPages=%d, size=%d\n", 
 					numPages, size);
 // first, set up the translation 
-    pageTable = new TranslationEntry[numPages];
-    for (i = 0; i < numPages; i++) {
-		pageTable[i].virtualPage = i;	// for now, virtual page # = phys page #
-		//pageTable[i].physicalPage = i;	//Replace with pageTable[i].physicalPage = i + startPage;
-		//pageTable[i].physicalPage = i + startPage;
-		pageTable[i].valid = FALSE;
-		pageTable[i].use = FALSE;
-		pageTable[i].dirty = FALSE;
-		pageTable[i].readOnly = FALSE;  // if the code segment was entirely on 
+	if(twoLevel){
+		
+		inner = numPages % 4 == 0 ? numPages / 4 : numPages / 4 + 1;
+		outerDivide = inner;
+		printf("BOY\n");
+		HPT = new TranslationEntry*[4];
+		printf("BOOOOY\n");
+		for(int i = 0; i < 4; i++)
+			HPT[i] = new TranslationEntry[inner];
+
+		printf("BOOOOOOOY\n");
+		printf("THE SIZE OF THE PROCESS IS: %d\n", numPages);
+		for(int i = 0; i < 4; i++){
+			for(int j = 0; j < inner; j++){
+				HPT[i][j].virtualPage = count;
+				HPT[i][j].valid = FALSE;
+				HPT[i][j].use = FALSE;
+				HPT[i][j].dirty = FALSE;
+				HPT[i][j].readOnly = FALSE;
+				count++;
+			}
+		}	
+	}
+
+	else{	
+	    pageTable = new TranslationEntry[numPages];
+	    for (i = 0; i < numPages; i++) {
+			pageTable[i].virtualPage = i;	// for now, virtual page # = phys page #
+			//pageTable[i].physicalPage = i;	//Replace with pageTable[i].physicalPage = i + startPage;
+			//pageTable[i].physicalPage = i + startPage;
+			pageTable[i].valid = FALSE;
+			pageTable[i].use = FALSE;
+			pageTable[i].dirty = FALSE;
+			pageTable[i].readOnly = FALSE;  // if the code segment was entirely on 
 						// a separate page, we could set its 
 						// pages to be read-only
 
@@ -233,7 +258,7 @@ AddrSpace::AddrSpace(OpenFile *executable){
 		//to indicate that the memory is in use
 		//memMap->Mark(i + startPage);
     }
-    
+}
     
     if(extraOutput){
     	//memMap->Print();
@@ -262,10 +287,17 @@ void
 AddrSpace::AssignPage(int vpn, int pAdr)
 {
 	startPage = pAdr;
-	pageTable[vpn].valid = TRUE;
+	if(twoLevel){
+		HPT[vpn / outerDivide][vpn % outerDivide].valid = TRUE;
+		HPT[vpn / outerDivide][vpn % outerDivide].physicalPage = startPage;	
+		
+	}
+	else{
+		pageTable[vpn].valid = TRUE;
 	
 //	machine->pageTable[vpn].valid = TRUE;
-	pageTable[vpn].physicalPage = startPage;
+		pageTable[vpn].physicalPage = startPage;
+	}
 	pAddr = startPage * PageSize;
 	
 	OpenFile * x = fileSystem->Open(fileN);
@@ -306,8 +338,15 @@ AddrSpace::AssignPage(int vpn, int pAdr)
 void
 AddrSpace::ReplacePage(int vAdr, int repAdr){
 	printf("Virtual Address: %d   Replacement Physical Address: %d\n", vAdr, repAdr);
-	pageTable[vAdr].valid = TRUE;
-	pageTable[vAdr].physicalPage = repAdr;
+	if(twoLevel){
+		HPT[vAdr / outerDivide][vAdr % outerDivide].valid = TRUE;
+		HPT[vAdr / outerDivide][vAdr % outerDivide].physicalPage = repAdr;	
+		
+	}
+	else{
+		pageTable[vAdr].valid = TRUE;
+		pageTable[vAdr].physicalPage = repAdr;
+	}
 	pAddr = repAdr * PageSize;
 	OpenFile * x = fileSystem->Open(fileN);
 	
@@ -348,6 +387,10 @@ AddrSpace::ReplacePage(int vAdr, int repAdr){
 void
 AddrSpace::UpdateFile(int vAddr, int pAdr)
 {
+	if(twoLevel)
+		HPT[vAddr / outerDivide][vAddr % outerDivide].physicalPage = NULL;
+	else
+		pageTable[vAddr].physicalPage = NULL;
 
 	OpenFile * x = fileSystem->Open(fileN);
 	
@@ -372,18 +415,36 @@ AddrSpace::~AddrSpace()
 {
 	// Only clear the memory if it was set to begin with
 	// which in turn only happens after space is set to true
-	int pagebegin = machine->pageTable[0].virtualPage;
-	printf("Begin Page: %d\n", pagebegin);
+//	int pagebegin = machine->pageTable[0].virtualPage;
+	//printf("Begin Page: %d\n", pagebegin);
 	if(space)
 	{
-		for(int i = 0; i < numPages; i++){	// We need an offset of startPage + numPages for clearing.
-			if(pageTable[i].physicalPage < NumPhysPages && pageTable[i].physicalPage >= 0){
-			//printf("Physical Page Delete: %d\n", pageTable[i].physicalPage);
-			memMap->Clear(machine->pageTable[i].physicalPage);
+		if(twoLevel){
+			
+			for(int i = 0; i < 4;i++){
+				for(int j = 0; j < inner; j++){
+					if(HPT[i][j].physicalPage < NumPhysPages && HPT[i][j].physicalPage >= 0){
+						memMap->Clear(HPT[i][j].physicalPage);
+					}
+				}
 			}
-
+			for(int i = 0; i < 4; i++)
+				delete [] HPT[i];
+				
+			delete [] HPT;
+		
 		}
-		delete pageTable;
+		
+		else{
+			for(int i = 0; i < numPages; i++){	// We need an offset of startPage + numPages for clearing.
+				if(pageTable[i].physicalPage < NumPhysPages && pageTable[i].physicalPage >= 0){
+				//printf("Physical Page Delete: %d\n", pageTable[i].physicalPage);
+				memMap->Clear(machine->pageTable[i].physicalPage);
+				}
+
+			}
+			delete pageTable;
+		}
 		if(extraOutput){
 			memMap->Print();
 		}
@@ -452,6 +513,13 @@ void AddrSpace::SaveState()
 
 void AddrSpace::RestoreState() 
 {
-    machine->pageTable = pageTable;
-    machine->pageTableSize = numPages;
+	if(twoLevel){
+		machine->HPTable = HPT;
+		
+	}
+	else{
+ 	   machine->pageTable = pageTable;
+ 	   
+	}
+	machine->pageTableSize = numPages;
 }

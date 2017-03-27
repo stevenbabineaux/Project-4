@@ -12,6 +12,7 @@
 
 #include "syscall.h"
 
+
 int i;
 int a;
 int arr[1700];
@@ -20,13 +21,14 @@ int
 main()
 {
 
-	//Write("Doot Me Up Inside\n",1,1);
+//	Write("Doot Me Up Inside\n",1,1);
 
 	
 	for(i = 0; i < 1700; i++){
 		//a *= a;
 		arr[i] = a;
 	}
+	
 	
 	
 }
