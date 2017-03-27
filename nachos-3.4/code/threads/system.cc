@@ -24,10 +24,7 @@ bool pageFlag;
 int * task4 = new int();
 int * task5 = new int();
 bool extraOutput = FALSE;
-
-
-
-
+bool twoLevel = FALSE;
 
 BitMap * memMap;
 
@@ -157,6 +154,9 @@ Initialize(int argc, char **argv)
 	} else if(!strcmp(*argv, "-E")) {
 		extraOutput = TRUE;
 		printf("-E selected additional output will be displayed.\n");
+	} else if(!strcmp(*argv, "-B")) {
+		twoLevel = TRUE;
+		printf("Two-level hierarchical selected.\n");
 	}
 #ifdef USER_PROGRAM
 	if (!strcmp(*argv, "-s"))

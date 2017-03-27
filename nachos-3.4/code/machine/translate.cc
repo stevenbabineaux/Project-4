@@ -70,6 +70,8 @@ WordToMachine(unsigned int word) { return WordToHost(word); }
 unsigned short
 ShortToMachine(unsigned short shortword) { return ShortToHost(shortword); }
 
+extern bool twoLevel;
+
 
 //----------------------------------------------------------------------
 // Machine::ReadMem

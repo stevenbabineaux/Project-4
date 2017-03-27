@@ -155,9 +155,11 @@ Initialize(int argc, char **argv)
             printf("Not a valid input. Input 0, 1, 2.\n"); 
         } 
 	} else if(!strcmp(*argv, "-E")) {
-		
-			extraOutput = TRUE;
+		extraOutput = TRUE;
 		printf("-E selected additional output will be displayed.\n");
+	} else if(!strcmp(*argv, "-B")) {
+		twoLevel = TRUE;
+		printf("Two-level hierarchical selected.\n");
 	}
 #ifdef USER_PROGRAM
 	if (!strcmp(*argv, "-s"))

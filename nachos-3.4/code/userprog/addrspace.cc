@@ -27,6 +27,7 @@ extern int * task4;
 extern int * task5;
 extern bool extraOutput;
 bool done = FALSE;
+extern bool twoLevel;
 
 
 
