@@ -155,8 +155,7 @@ Initialize(int argc, char **argv)
             printf("Not a valid input. Input 0, 1, 2.\n"); 
         } 
 	} else if(!strcmp(*argv, "-E")) {
-		if(*(argv+1) == NULL)
-			extraOutput = TRUE;
+		extraOutput = TRUE;
 		printf("-E selected additional output will be displayed.\n");
 	}
 #ifdef USER_PROGRAM

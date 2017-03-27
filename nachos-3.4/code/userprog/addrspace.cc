@@ -258,7 +258,7 @@ AddrSpace::AddrSpace(OpenFile *executable){
 
 
 void
-AddrSpace::AssignPage( int vpn, int pAdr)
+AddrSpace::AssignPage(int vpn, int pAdr)
 {
 	startPage = pAdr;
 	pageTable[vpn].valid = TRUE;
