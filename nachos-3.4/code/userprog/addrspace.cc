@@ -88,7 +88,6 @@ AddrSpace::AddrSpace(OpenFile *executable){
     	printf("Number of physical pages: %d\n", NumPhysPages);
         printf("Page Size in bytes: %d\n\n", PageSize);
     	done = TRUE;
-    
     }
     
     
@@ -117,8 +116,11 @@ AddrSpace::AddrSpace(OpenFile *executable){
     sprintf(fileX, "%d.swap", threadID);
     strcpy(fileN, fileX);
     
-    fileSystem->Create(fileX, size);	// ASSERTION FAILED
     
+    fileSystem->Create(fileX, size);	// ASSERTION FAILED
+    if(extraOutput){
+    	printf("Swapfile %s created\n\n", fileX);
+    }
     
     OpenFile * copyto = fileSystem->Open(fileX);
     
@@ -150,64 +152,7 @@ AddrSpace::AddrSpace(OpenFile *executable){
 	//This requires a global bitmap instance
 	
 	count = 0;
-	/*
-	for(i = 0; i < NumPhysPages && counter < numPages; i++)
-	{
-		if(!memMap->Test(i))
-		{
-			if(counter == 0)
-				startPage = i;	//startPage is a class data member
-								//Should it be public or private? (Currently private)
-			counter++;111
-		}
-		else
-			counter = 0;
-	}
-	*/
-	//DEBUG('a', "%i contiguous blocks found for %i pages\n", counter, numPages);
-	/*
-	if(*task4 == 1){ //FIFO
-		printf("inside fifo\n");
-		if(numPages > memMap->NumClear()){
-			while(numPages > memMap->NumClear()){
-				int replaceSpot = (int)pageNumberList->Remove();
-				memset(machine->mainMemory + replaceSpot * PageSize, '\0', PageSize);
-				memMap->Clear(replaceSpot);
-				printf("in while\n");
-			}
-			printf("after while loop\n");
-		}
-	} else if(*task4 == 2){ //random page replacement
-		printf("inside random\n");
-		printf("NumPages is: %d \nNumClear is: %d\n", numPages, memMap->NumClear());
-		if(numPages > memMap->NumClear()){
-			while(numPages > memMap->NumClear()){
-				printf("IM IN HERE\n");
-				int replaceSpot = Random() % NumPhysPages;
-				printf("Replace Spot is %d\n" , replaceSpot);
-				if(memMap->Test(replaceSpot)){
-					printf("Hai\n");
-					memset(machine->mainMemory + replaceSpot * PageSize, '\0', PageSize);
-				}
-				memMap->Clear(replaceSpot);
-				memMap->Print();
-			}
-		}
-	} else{ //regular demand paging
-		printf("regular demand paging");
-		//If no memory available, terminate
-		if(numPages > memMap->NumClear())
-		{	
-			printf("NumPages %d\n numClear %d\n", numPages, memMap->NumClear());
-			//memMap->Print();
-			printf("Not enough memory for new process; terminating!.\n");
-			currentThread->killNewChild = true;
-			return;
-		}
-	}
-	
-	
-*/
+
 	//If we get past the if statement, then there was sufficient space
 	space = true;
 
@@ -221,14 +166,10 @@ AddrSpace::AddrSpace(OpenFile *executable){
 		
 		inner = numPages % 4 == 0 ? numPages / 4 : numPages / 4 + 1;
 		outerDivide = inner;
-		printf("BOY\n");
 		HPT = new TranslationEntry*[4];
-		printf("BOOOOY\n");
 		for(int i = 0; i < 4; i++)
 			HPT[i] = new TranslationEntry[inner];
 
-		printf("BOOOOOOOY\n");
-		printf("THE SIZE OF THE PROCESS IS: %d\n", numPages);
 		for(int i = 0; i < 4; i++){
 			for(int j = 0; j < inner; j++){
 				HPT[i][j].virtualPage = count;
@@ -260,26 +201,6 @@ AddrSpace::AddrSpace(OpenFile *executable){
     }
 }
     
-    if(extraOutput){
-    	//memMap->Print();
-    }
-		// Useful!
- 
-// zero out the entire address space, to zero the unitialized data segment 
-// and the stack segment
-//    bzero(machine->mainMemory, size); rm for Solaris
-	//Edited version adds startPage * PageSize to the address. Hopefully this is proper.
-	//Either way, it appears to zero out only however much memory is needed,
-	//so zeroing out all memory doesn't seem to be an issue. - Devin
-	
-	
-
-// then, copy in the code and data segments into memory
-//Change these too since they assume virtual page = physical page
-	  //Fix this by adding startPage times page size as an offset
-	  
-	
-	
 }
 
 
@@ -454,6 +375,9 @@ AddrSpace::~AddrSpace()
 	//char* filename = new char[64];
 	
 	fileSystem->Remove(fileN);
+	if(extraOutput){
+		printf("Swapfile %s deleted\n\n", fileN);
+	}	
 	
 }
 

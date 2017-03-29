@@ -193,6 +193,11 @@ ExceptionHandler(ExceptionType which)
         		
         		
         		OpenFile *executable = fileSystem->Open(programName);
+        		if(executable == NULL){
+        			printf("Invalid file name\n");
+        			delete programName;
+        			break;
+        		}
         		delete programName;
 				
 				// Calculate needed memory space
@@ -382,9 +387,6 @@ ExceptionHandler(ExceptionType which)
 					}
 					Thread* threadToClear = ipt[pAdr].process;
 					threadToClear->space->UpdateFile(ipt[pAdr].vAddress, pAdr);
-					threadToClear->space->RestoreState();
-					machine->pageTable[vpn].physicalPage = NULL;
-					currentThread->space->RestoreState();
 					currentThread->space->ReplacePage(vpn, pAdr);
 					ipt[pAdr].process = currentThread;
 					ipt[pAdr].vAddress = vpn;
@@ -405,9 +407,6 @@ ExceptionHandler(ExceptionType which)
 				printf("Assigning Frame %d\n", pAdr);
 			}
 		}
-	
-		
-		
 		else{
 			ipt[pAdr].process = currentThread;
 			ipt[pAdr].vAddress = vpn;
@@ -420,28 +419,6 @@ ExceptionHandler(ExceptionType which)
 
 			currentThread->space->AssignPage(vpn, pAdr);
 		}
-		/*
-		for(int i=0; i < NumPhysPages; i++){
-			if(machine->pageTable[i].valid)
-				printf("1");
-			else
-				printf("0");
-		
-		}
-		*/
-		//interrupt->Halt();
-		//for(int f = 0; i < machine->NumPhysPages; i++){
-			
-		//}
-		//printf("ERROR: Page Fault Exception, called by thread %i.\n",currentThread->getID());
-		
-			/*if (currentThread->getName() == "main")
-				ASSERT(FALSE);  //Not the way of handling an exception.
-			if(currentThread->space)	// Delete the used memory from the process.
-				delete currentThread->space;
-			currentThread->Finish();	// Delete the thread.
-			break;
-		*/
 		break;
 	}
 //////////////////////////////////////////////////////////////////////////
