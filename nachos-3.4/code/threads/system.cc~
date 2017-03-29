@@ -24,10 +24,7 @@ bool pageFlag;
 int * task4 = new int();
 int * task5 = new int();
 bool extraOutput = FALSE;
-
-
-
-
+bool twoLevel = FALSE;
 
 BitMap * memMap;
 

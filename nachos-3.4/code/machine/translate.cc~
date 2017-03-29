@@ -224,7 +224,7 @@ Machine::Translate(int virtAddr, int* physAddr, int size, bool writing)
 	    return PageFaultException;
 	}
 	 else if(twoLevel && !HPTable[vpn / division][vpn % division].valid){
-	 	printf("The index in the first Level: %d, The index in the second Level: %d", vpn / division, vpn % division);
+	 	
 		return PageFaultException;
 	 }
 	 
