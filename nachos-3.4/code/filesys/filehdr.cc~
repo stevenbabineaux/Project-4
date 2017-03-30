@@ -61,7 +61,7 @@ FileHeader::Allocate(BitMap *freeMap, int fileSize)
 				else
 					subhdr->Allocate(freeMap, fileSize);
 				fileSize -= doubleIndirect;
-				subhdr->WriteBack(dataSectors[i]);
+				subhdr->WriteBack(dataSector[i]);
 				i++;
 			}
 		}
