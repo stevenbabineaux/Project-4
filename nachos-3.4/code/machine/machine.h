@@ -180,7 +180,6 @@ class Machine {
 					// "read-only" to Nachos kernel code
 
     TranslationEntry *pageTable;
-    TranslationEntry ** HPTable;
     unsigned int pageTableSize;
 
   private:

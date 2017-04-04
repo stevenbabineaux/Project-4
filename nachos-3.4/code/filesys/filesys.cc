@@ -174,8 +174,6 @@ FileSystem::FileSystem(bool format)
 bool
 FileSystem::Create(char *name, int initialSize)
 {
-	
-    printf("herheherhehrehrherherhe1\n");
     Directory *directory;
     BitMap *freeMap;
     FileHeader *hdr;
@@ -199,11 +197,8 @@ FileSystem::Create(char *name, int initialSize)
             success = FALSE;	// no space in directory
 	else {
     	    hdr = new FileHeader;
-    	    printf("herheherhehrehrherherhe2\n");
-	    if (!hdr->Allocate(freeMap, initialSize)){
-        		printf("herheherhehrehrherherhe3\n");
-            	success = FALSE;
-        }	// no space on disk for data
+	    if (!hdr->Allocate(freeMap, initialSize))
+            	success = FALSE;	// no space on disk for data
 	    else {	
 	    	success = TRUE;
 		// everthing worked, flush all changes back to disk

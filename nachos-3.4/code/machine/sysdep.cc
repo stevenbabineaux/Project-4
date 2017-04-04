@@ -155,8 +155,7 @@ int
 OpenForWrite(char *name)
 {
     int fd = open(name, O_RDWR|O_CREAT|O_TRUNC, 0666);
-    if (fd < 0)
-    	printf("errno is %d\n", errno);
+
     ASSERT(fd >= 0); 
     return fd;
 }
@@ -224,7 +223,6 @@ void
 Lseek(int fd, int offset, int whence)
 {
     int retVal = lseek(fd, offset, whence);
-    
     ASSERT(retVal >= 0);
 }
 

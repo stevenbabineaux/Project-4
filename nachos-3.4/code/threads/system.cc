@@ -21,10 +21,6 @@ Timer *timer;				// the hardware timer device,
 int threadChoice;
 int memChoice;
 bool pageFlag;
-int * task4 = new int();
-int * task5 = new int();
-bool extraOutput = FALSE;
-bool twoLevel = FALSE;
 
 BitMap * memMap;
 
@@ -36,7 +32,6 @@ FileSystem  *fileSystem;
 Machine *machine;	// user program memory and registers
 List* activeThreads;
 int threadID;
-
 #endif
 
 #ifdef FILESYS
@@ -132,43 +127,7 @@ Initialize(int argc, char **argv)
 	    else
 			memChoice = atoi(*(argv+1));
 	    argCount = 2;
-	} else if(!strcmp(*argv, "-V")) {
-	    if(argc <= 1){
-	        printf("Not a valid input. Input 0, 1, 2.\n");
-	    }
-	    else if (!strcmp(*(argv + 1),"0")) {
-	    	printf("Disable Virtual Memory (Demand Paging Only)\n");
-			*task4 = 0;
-	    }
-	    else if (!strcmp(*(argv + 1),"1")) {
-			*task4 = 1;
-	    	printf("FIFO Page Replacement\n");
-	    }
-	    else if (!strcmp(*(argv + 1),"2")) {
-			*task4 = 2;
-			printf("Random Page Replacement\n");
-	    }
-	    else{
-            printf("Not a valid input. Input 0, 1, 2.\n"); 
-        } 
-//////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////
-////////////////////START PROJECT 4///////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////
-
-	} else if(!strcmp(*argv, "-E")) {
-		extraOutput = TRUE;
-		printf("-E selected additional output will be displayed.\n");
-	} else if(!strcmp(*argv, "-B")) {
-		twoLevel = TRUE;
-		printf("Two-level hierarchical selected.\n");
 	}
-//////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////
-//////////////////////END PROJECT 4///////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////
 #ifdef USER_PROGRAM
 	if (!strcmp(*argv, "-s"))
 	    debugUserProg = TRUE;

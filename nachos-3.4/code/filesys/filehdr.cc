@@ -27,8 +27,6 @@
 #include "system.h"
 #include "filehdr.h"
 
-#define singleIndirect NumDirect * SectorSize
-#define doubleIndirect NumDirect * NumDirect * SectorSize
 //----------------------------------------------------------------------
 // FileHeader::Allocate
 // 	Initialize a fresh file header for a newly created file.
@@ -43,31 +41,13 @@
 bool
 FileHeader::Allocate(BitMap *freeMap, int fileSize)
 { 
-	printf("something %d\n", doubleIndirect);
-	
-	
     numBytes = fileSize;
     numSectors  = divRoundUp(fileSize, SectorSize);
     if (freeMap->NumClear() < numSectors)
-		return FALSE;		// not enough space
-	else{
-		if(fileSize > doubleIndirect){
-			int i = 0;
-			while(fileSize > 0){
-				dataSectors[i] = freeMap->Find();
-				FileHeader *subhdr = new FileHeader;
-				if(fileSize > doubleIndirect)
-					subhdr->Allocate(freeMap, doubleIndirect);
-				else
-					subhdr->Allocate(freeMap, fileSize);
-				fileSize -= doubleIndirect;
-				subhdr->WriteBack(dataSectors[i]);
-				i++;
-			}
-		}
-	}
+	return FALSE;		// not enough space
+
     for (int i = 0; i < numSectors; i++)
-		dataSectors[i] = freeMap->Find();
+	dataSectors[i] = freeMap->Find();
     return TRUE;
 }
 

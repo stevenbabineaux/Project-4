@@ -15,9 +15,6 @@
 
 #include "copyright.h"
 #include "filesys.h"
-#include "noff.h"
-
-
 
 #define UserStackSize		1024 	// increase this as necessary!
 
@@ -27,37 +24,21 @@ class AddrSpace {
 					// initializing it with the program
 					// stored in the file "executable"
     ~AddrSpace();			// De-allocate an address space
-    
-    OpenFile * myFile;
-    void AssignPage( int addr, int pAdr);
-    void ReplacePage(int addr,  int repAdr); // addr  = Virtual Address  repAdr = Replacement Physical Address
-    void UpdateFile(int vaddr, int paddr);
-	noffHeader myNoff;
-	
-	int size;
-	unsigned int startPage;
-	bool space;
-	char * fileN;
-	int pAddr;
+
     void InitRegisters();		// Initialize user-level CPU registers,
 					// before jumping to user code
 
-
-
     void SaveState();			// Save/restore address space-specific
-    
     void RestoreState();		// info on a context switch 
-	TranslationEntry ** HPT;
-	int outerDivide;
-	int inner;
+
   private:
     TranslationEntry *pageTable;	// Assume linear page table translation
 					// for now!
     unsigned int numPages;		// Number of pages in the virtual 
 					// address space
-			//Page number that the program starts at
+	unsigned int startPage;		//Page number that the program starts at
 								//in physical memory
-			//Boolean to remember if there was enough space or not
+	bool space;		//Boolean to remember if there was enough space or not
 };
 
 #endif // ADDRSPACE_H

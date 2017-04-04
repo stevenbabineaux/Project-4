@@ -14,8 +14,6 @@
 #include "addrspace.h"
 #include "synch.h"
 
-extern bool extraOutput;
-
 //----------------------------------------------------------------------
 // StartProcess
 // 	Run a user program.  Open the executable, load it into
@@ -28,9 +26,7 @@ StartProcess(char *filename)
     OpenFile *executable = fileSystem->Open(filename);
 	
     AddrSpace *space;
-	if(extraOutput){
-		printf("\nLoading Process %s\n\n", filename);
-    }
+
     if (executable == NULL) {
 	printf("Unable to open file %s\n", filename);
 	return;
@@ -43,17 +39,11 @@ StartProcess(char *filename)
 		printf("Best-fit.\n");
 	else
 		printf("Worst-fit.\n");
-		
-		
 	
-    space = new AddrSpace(executable);
-    
-    //printf(space->fileN);
-    
+    space = new AddrSpace(executable);    
     currentThread->space = space;
-  	
 
-	delete executable;			// close file
+    delete executable;			// close file
 
     space->InitRegisters();		// set the initial register values
     space->RestoreState();		// load page table register

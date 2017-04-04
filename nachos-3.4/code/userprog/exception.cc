@@ -29,33 +29,15 @@
 #include "addrspace.h"   // FA98
 #include "sysdep.h"   // FA98
 
-
 // begin FA98
-
-
-
-
-
-struct InvertedPageTable{
-	Thread * process;
-	int  vAddress;
-	
-};
 
 static int SRead(int addr, int size, int id);
 static void SWrite(char *buffer, int size, int id);
 Thread * getID(int toGet);
-extern int * task4;
-List * pageNumberList = new List();
-extern bool extraOutput;
-
-
-InvertedPageTable ipt[NumPhysPages];
-
 
 // end FA98
 
-//------------------------------------------------s----------------------
+//----------------------------------------------------------------------
 // ExceptionHandler
 // 	Entry point into the Nachos kernel.  Called when a user program
 //	is executing, and either does a syscall, or generates an addressing
@@ -177,56 +159,52 @@ ExceptionHandler(ExceptionType which)
 			break;
 		case SC_Exec :	// Executes a user process inside another user process.
 		   {
-//////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////
-//////////////////////START PROJECT 4/////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////
-        		char *programName = new char[64];
-        		int i = 0; 
-        		int character = 1;
-        		while ((i < 62) && (character != 0)) {
-          			machine->ReadMem(arg1+i, 1, &character);
-          			programName[i++] = (char) character;
-        		}
-        		programName[i] = '\0';
-        		if(programName[0] != '.')
-        			programName[0] = '.';
-        		if(extraOutput){
-					printf("Loading Process %s\n\n", programName);
-   				}
-        		
-        		
-        		OpenFile *executable = fileSystem->Open(programName);
-        		if(executable == NULL){
-        			printf("Invalid file name\n");
-        			delete programName;
-        			break;
-        		}
-        		delete programName;
-//////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////
-//////////////////////END PROJECT 4///////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////
+				printf("SYSTEM CALL: Exec, called by thread %i.\n",currentThread->getID());
+
+				// Retrieve the address of the filename
+				int fileAddress = arg1; // retrieve argument stored in register r4
+
+				// Read file name into the kernel space
+				char *filename = new char[100];
+				
+				for(int m = 0; m < 100; m++)
+					filename[m] = NULL;
+
+				// Free up allocation space and get the file name
+				if(!machine->ReadMem(fileAddress,1,&j))return;
+				i = 0;
+
+				while(j != 0)
+				{
+					filename[i]=(char)j;
+					fileAddress += 1;
+					i++;
+					if(!machine->ReadMem(fileAddress,1,&j))return;
+				}
+				// Open File
+				OpenFile *executable = fileSystem->Open(filename);
+				
+				if (executable == NULL) 
+				{
+					printf("Unable to open file %s\n", filename);
+					delete filename;
+					break;
+				}
+				delete filename;
+
 				// Calculate needed memory space
 				AddrSpace *space;
-				
-				threadID++;	// Increment the total number of threads.
-					
 				space = new AddrSpace(executable);
-				//printf("Done");
+				delete executable;
 				// Do we have enough space?
 				if(!currentThread->killNewChild)	// If so...
 				{
-				//printf("Create Thrad\n");
 					Thread* execThread = new Thread("thrad!");	// Make a new thread for the process.
-					
-					
 					execThread->space = space;	// Set the address space to the new space.
 					execThread->setID(threadID);	// Set the unique thread ID
 					activeThreads->Append(execThread);	// Put it on the active list.
 					machine->WriteRegister(2, threadID);	// Return the thread ID as our Exec return variable.
+					threadID++;	// Increment the total number of threads.
 					execThread->Fork(processCreator, 0);	// Fork it.
 				}
 				else	// If not...
@@ -234,7 +212,6 @@ ExceptionHandler(ExceptionType which)
 					machine->WriteRegister(2, -1 * (threadID + 1));	// Return an error code
 					currentThread->killNewChild = false;	// Reset our variable
 				}
-				delete executable;
 				break;	// Get out.
 			}
 			case SC_Join :	// Join one process to another.
@@ -272,28 +249,9 @@ ExceptionHandler(ExceptionType which)
 					printf("Process %i exited normally!\n", currentThread->getID());
 				else
 					printf("ERROR: Process %i exited abnormally!\n", currentThread->getID());
+				
 				if(currentThread->space)	// Delete the used memory from the process.
 					delete currentThread->space;
-				for(int i = 0; i < NumPhysPages ; i++){
-					
-//////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////
-////////////////////START PROJECT 4///////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////
-					if(ipt[i].process != NULL){
-						printf("Process ID: %d, Physical Page: %d\n", ipt[i].process->getID(), i);
-						if(ipt[i].process == currentThread){
-							ipt[i].process = NULL;
-							ipt[i].vAddress = NULL;
-						}
-					}
-//////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////
-//////////////////////END PROJECT 4///////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////
-				}
 				currentThread->Finish();	// Delete the thread.
 
 				break;
@@ -357,100 +315,12 @@ ExceptionHandler(ExceptionType which)
 			delete currentThread->space;
 		currentThread->Finish();	// Delete the thread.
 		break;
-	
-//////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////
-///////////////////////////START: PROJECT 4///////////////////////////////
-//////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////
-
-	case PageFaultException:
-	{
-		if(extraOutput){
-			printf("\nPage Fault:\n");
-		}
-		
-		unsigned int vpn;
-		int virtAddr;
-		virtAddr = (int)machine->ReadRegister(39);
-		vpn = (unsigned) virtAddr / PageSize;
-		if(extraOutput){
-			printf("Page availability before adding the process:\n");
-				memMap->Print();
-		}
-		int pAdr = memMap->Find();
-		if(pAdr == -1){
-			switch(*task4){
-				case 1: // FIFO
-				{
-					pAdr = (int)pageNumberList->Remove();
-					Thread * threadToClear = ipt[pAdr].process;
-					threadToClear->space->UpdateFile(ipt[pAdr].vAddress, pAdr);
-					pageNumberList->Append((void*)pAdr);
-					currentThread->space->ReplacePage(vpn, pAdr);
-					ipt[pAdr].process = currentThread;
-					ipt[pAdr].vAddress = vpn;
-					break;
-					
-				
-				}
-				case 2:
-				{
-					while(true){
-						pAdr = Random() % (NumPhysPages - 1);
-						if(memMap->Test(pAdr)){
-							break;
-						}
-					}
-					Thread* threadToClear = ipt[pAdr].process;
-					threadToClear->space->UpdateFile(ipt[pAdr].vAddress, pAdr);
-					currentThread->space->ReplacePage(vpn, pAdr);
-					ipt[pAdr].process = currentThread;
-					ipt[pAdr].vAddress = vpn;
-					break;
-					
- 				}
-			 //Random
-				
-				default:
-					printf("Could not find space to hold requested process! Crashing System!\n");
-					
-					Cleanup(); // Break Nachos
-					break;
-			}
-			if(extraOutput){
-				printf("Process %d requests VPN: %d\n",
-					currentThread->getID(), vpn);
-				printf("Assigning Frame %d\n", pAdr);
-			}
-		}
-		else{
-			ipt[pAdr].process = currentThread;
-			ipt[pAdr].vAddress = vpn;
-			pageNumberList->Append((void*)pAdr);
-			if(extraOutput){
-				printf("Process %d requests VPN: %d\n",
-					currentThread->getID(), vpn);
-				printf("Assigning Frame %d\n", pAdr);
-			}
-
-			currentThread->space->AssignPage(vpn, pAdr);
-		}
-		break;
-	}
-//////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////
-/////////////////////////////END: PROJECT 4///////////////////////////////
-//////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////
-
 	case NumExceptionTypes :
 		printf("ERROR: NumExceptionTypes, called by thread %i.\n",currentThread->getID());
 		if (currentThread->getName() == "main")
 			ASSERT(FALSE);  //Not the way of handling an exception.
 		if(currentThread->space)	// Delete the used memory from the process.
 			delete currentThread->space;
-		
 		currentThread->Finish();	// Delete the thread.
 		break;
 

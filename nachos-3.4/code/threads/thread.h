@@ -102,7 +102,6 @@ class Thread {
     void setStatus(ThreadStatus st) { status = st; }
     char* getName() { return (name); }
     void Print() { printf("%s, ", name); }
-    int vAddress;
 	
 	void setID(int ID);	// Set a new ID.
 	bool isJoined;	// Used to determine if we've already joined to a child process.
