@@ -79,6 +79,8 @@ class Lock {
 
   private:
     char* name;				// for debugging
+    Thread * whoIsHolding;
+    Semaphore * semaphore;
     // plus some other stuff you'll need to define
 };
 

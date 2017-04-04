@@ -119,10 +119,8 @@ void Lock::Acquire() {
 	whoIsHolding = currentThread;
 }
 void Lock::Release() {
-	if(currentThread == whoIsHolding){
-		whoIsHolding = NULL;
-		semaphore->V();
-	}
+	whoIsHolding = NULL;
+	semaphore->V();
 }
 //////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////
